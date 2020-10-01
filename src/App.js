@@ -3,9 +3,11 @@ import { BrowserRouter as Router, Switch, Route, Link } from 'react-router-dom';
 import Home from './components/Home';
 import Login from './components/Login';
 import Workspace from './components/Workspace';
+import User from './components/User';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 class App extends Component {
+
     render() {
         return (
             <Router>
@@ -23,6 +25,7 @@ class App extends Component {
                         <Route exact path='/' component={Home} />
                         <Route exact path='/Login' component={Login} />
                         <Route exact path='/Workspaces' component={Workspace} />
+                        <Route exact path='/User' component={User} />
                     </Switch>
                 </div>
             </Router>
