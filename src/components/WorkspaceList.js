@@ -12,9 +12,9 @@ class WorkspaceList extends Component {
             // probably get all workspaces here
 
             <ListGroup horizontal>
-                {this.renderBadge("Users", '/user')}
-                {this.renderBadge("WS 2", '/admin')}
-                {this.renderBadge("WS 3", '')}
+                {this.renderBadge("WS 1", 'workspace1')}
+                {this.renderBadge("WS 2", 'workspace2')}
+                {this.renderBadge("WS 3", 'workspace78')}
             </ListGroup>
         );
     }
@@ -36,7 +36,7 @@ class WorkspaceBadge extends Component {
         const { redirect } = this.state;
 
         if (redirect !== "") {
-            return <Redirect to={this.props.route} />
+            return <Redirect to={"/workspace/" + this.props.route} />
         }
 
         return (
@@ -46,7 +46,7 @@ class WorkspaceBadge extends Component {
                     onClick={() => {
                         //alert(`${this.props.value} clicked`)
                         if (this.props.route !== '') {
-                            this.setState({ redirect: this.props.route })
+                            this.setState({ redirect: `/workspace/${this.props.route}` })
                         }
                     }}
                 >
