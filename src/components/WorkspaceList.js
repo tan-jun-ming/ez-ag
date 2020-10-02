@@ -35,7 +35,7 @@ class WorkspaceBadge extends Component {
 
         const { redirect } = this.state;
 
-        if (redirect != "") {
+        if (redirect !== "") {
             return <Redirect to={this.props.route} />
         }
 
@@ -45,7 +45,7 @@ class WorkspaceBadge extends Component {
                     className="btn btn-primary badge"
                     onClick={() => {
                         //alert(`${this.props.value} clicked`)
-                        if (this.props.route != '') {
+                        if (this.props.route !== '') {
                             this.setState({ redirect: this.props.route })
                         }
                     }}
