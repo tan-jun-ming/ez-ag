@@ -4,6 +4,7 @@ import Home from './components/Home';
 import Login from './components/Login';
 import Workspace from './components/Workspace';
 import WorkspaceList from './components/WorkspaceList';
+import Plan from './components/plan/Plan';
 import User from './components/User';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
@@ -19,6 +20,7 @@ class App extends Component {
                             <li><Link to={'/'} class="nav-link"> Home </Link></li>
                             <li><Link to={'/Login'} className="nav-link"> Login </Link></li>
                             <li><Link to={'/Workspaces'} className="nav-link"> Workspaces </Link></li>
+                            <li><Link to={'/Plan'} className="nav-link">Plan</Link></li>
                         </ul>
                     </nav>
                     <hr />
@@ -28,6 +30,7 @@ class App extends Component {
                         <Route exact path='/Workspaces' component={WorkspaceList} />
                         <Route exact path='/User' component={User} />
                         <Route exact path="/workspace/:id" component={Workspace} />
+                        <Route exact path="/Plan/" component={Plan}/>
                     </Switch>
                 </div>
             </Router>
