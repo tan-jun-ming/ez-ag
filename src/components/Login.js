@@ -8,22 +8,31 @@ export default function Login() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
-    function validateForm() {
-        return email.length > 0 && password.length > 0;
-    }
+    // function validateForm() {
+    //     return email.length > 0 && password.length > 0;
+    // }
 
-    function handleSubmit(event) {
-        event.preventDefault();
-    }
+    // function handleSubmit(event) {
+    //     event.preventDefault();
+    // }
 
     const responseGoogle = (response) => {
-        console.log(response);
+        setName(response.profileObj.name);
+        setEmail(response.profileObj.email);
+        setUrl(response.profileObj.imageUrl);
     }
+
+    const [name, setName] = useState("");
+
+    const[url, setUrl] = useState("");
 
     return (
         
         <div className="Login">
             <h1>Google Login</h1>
+            <h2>Welcome {name}</h2>
+            <h2>Email: {email}</h2>
+            <img src={url} alt={name}/>
             <GoogleLogin
             clientId = "16839305118-20p6nepats8u9tbbpj4lugu0n2oo8nu2.apps.googleusercontent.com"
             buttonText="Login"
