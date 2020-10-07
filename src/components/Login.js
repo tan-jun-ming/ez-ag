@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { Button, FormGroup, FormControl, FormLabel } from "react-bootstrap";
+import GoogleLogin from "react-google-login";
 import "./Login.scss";
+
 
 export default function Login() {
     const [email, setEmail] = useState("");
@@ -14,9 +16,22 @@ export default function Login() {
         event.preventDefault();
     }
 
+    const responseGoogle = (response) => {
+        console.log(response);
+    }
+
     return (
+        
         <div className="Login">
-            <form onSubmit={handleSubmit}>
+            <h1>Google Login</h1>
+            <GoogleLogin
+            clientId = "16839305118-20p6nepats8u9tbbpj4lugu0n2oo8nu2.apps.googleusercontent.com"
+            buttonText="Login"
+            onSuccess={responseGoogle}
+            onFailure={responseGoogle}
+            cookiePolicy={'single_host_origin'}
+            />
+            {/* <form onSubmit={handleSubmit}>
                 <FormGroup controlId="email" bsSize="large">
                     <FormLabel>Email</FormLabel>
                     <FormControl
@@ -37,7 +52,8 @@ export default function Login() {
                 <Button block bsSize="large" disabled={!validateForm()} type="submit">
                     Login
             </Button>
-            </form>
+            </form> */}
         </div>
+        
     );
 }
