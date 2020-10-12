@@ -51,21 +51,3 @@ MongoClient.connect('mongodb+srv://anfelix:oaHKXziPb8dZcua3@ezagdb.qf03a.mongodb
             res.send(result);
         })
     });
-<<<<<<< HEAD
-});
-=======
-});
-
-// const mongoClient = require('mongodb').MongoClient
-// var ObjectId = require('mongodb').ObjectId;
-
-// MongoClient.connect(
-//     'mongodb+srv://dbusers:Cwth149t65ZhMKOY@ezagdb.qf03a.mongodb.net/dbusers?retryWrites=true&w=majority',
-//     (err, database) =>{
-//         var dbase = db.db("EzAgDb");
-//         if(err) return console.log(err)
-//         app.listen(3000, () => {
-//             console.long('app working on 300')
-//         })
-//     });
->>>>>>> e7d7cf81274e1ed34201323722144b5b16c5184f
