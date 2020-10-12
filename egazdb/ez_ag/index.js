@@ -51,4 +51,3 @@ MongoClient.connect('mongodb+srv://anfelix:oaHKXziPb8dZcua3@ezagdb.qf03a.mongodb
             res.send(result);
         })
     });
-});
