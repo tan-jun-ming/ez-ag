@@ -8,13 +8,19 @@ class WorkspaceList extends Component {
 
         console.log("Rendering Workspace!");
 
+        // get user id from session
+        // determine workspaces user can access
+
+        let workspaces = [
+            this.renderBadge("WS 1", 'workspace1'),
+            this.renderBadge("WS 2", 'workspace2'),
+            this.renderBadge("WS 3", 'workspace3')
+        ];
+
         return (
-            // probably get all workspaces here
 
             <ListGroup horizontal>
-                {this.renderBadge("WS 1", 'workspace1')}
-                {this.renderBadge("WS 2", 'workspace2')}
-                {this.renderBadge("WS 3", 'workspace78')}
+                {workspaces}
             </ListGroup>
         );
     }
