@@ -1,7 +1,7 @@
 import app from 'firebase/app';
 import 'firebase/auth';
 
-  var firebaseConfig = {
+  var config = {
     apiKey: "AIzaSyBk8RIjdas1ryALJoRCOh9KKEgAvWOMuUE",
     authDomain: "ez-ag-e880f.firebaseapp.com",
     databaseURL: "https://ez-ag-e880f.firebaseio.com",
