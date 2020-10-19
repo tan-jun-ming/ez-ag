@@ -70,7 +70,6 @@ class TableColumn {
 class TableRow {
     name = "Row";
     isStatic = false;
-    formula = null;
 }
 
 class TableHeaderComponent extends Component {
