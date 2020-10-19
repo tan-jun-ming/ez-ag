@@ -24,6 +24,8 @@ class TableComponent extends Component {
                     console.log(result)
                     if (result.error === null) {
                         data[y][x] = String(result.result);
+                    } else {
+                        data[y][x] = String(result.error);
                     }
                     console.log(data[y][x])
                 }
@@ -181,17 +183,21 @@ function TableHeaderComponent(props) {
     );
 }
 
-function TableCellComponent(props) {
-    return (
-        <td className={props.isStatic ? "static" : ""}>
-            <EditableLabel
-                initialValue={props.value}
-                labelClass="table-label"
-                save={(value) => { props.setvalue(value) }}
+class TableCellComponent extends Component {
+    render() {
+        return (
+            <td className={this.props.isStatic ? "static" : ""} >
 
-            />
-        </td>
-    )
+                <input
+                    onBlur={(e) => { this.props.setvalue(e.target.value) }}
+
+                />
+                <div>
+                    {this.props.value}
+                </div>
+            </td>
+        );
+    }
 }
 
 export default TableComponent;
