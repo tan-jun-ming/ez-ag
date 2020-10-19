@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import EditableLabel from 'react-editable-label';
+import { Parser as FormulaParser } from 'hot-formula-parser';
 
 class TableComponent extends Component {
     constructor(props) {
@@ -9,6 +10,26 @@ class TableComponent extends Component {
             rows: [],
             data: [], // columns, rows
         }
+        this.parser = new FormulaParser();
+    }
+
+    process_spreadsheet() {
+        let data = this.state.data.slice();
+        for (let x = 0; x < this.state.columns.length; x++) {
+            for (let y = 0; y < this.state.rows.length; y++) {
+                let curr_cell = data[y][x];
+                if (curr_cell && curr_cell.startsWith("=")) {
+                    console.log(curr_cell);
+                    let result = this.parser.parse(curr_cell.substr(1));
+                    console.log(result)
+                    if (result.error === null) {
+                        data[y][x] = String(result.result);
+                    }
+                    console.log(data[y][x])
+                }
+            }
+        }
+        return data;
     }
 
     addCol(isStatic) {
@@ -50,7 +71,7 @@ class TableComponent extends Component {
     }
 
     render() {
-        let table_data = this.state.data; // TODO: use external method to calculate with formulas
+        let table_data = this.process_spreadsheet(); // TODO: use external method to calculate with formulas
 
         let column_headers = [];
         let table_cells = [];
@@ -79,6 +100,7 @@ class TableComponent extends Component {
                     )
                 }
                 if (this.state.rows.length >= 1) {
+                    console.log(table_data[i][u])
                     new_row.push(
                         <TableCellComponent
                             value={table_data[i][u]}
@@ -109,10 +131,10 @@ class TableComponent extends Component {
                     </tr>
                     <tr>
                         <td>
-                            <button class="btn" onClick={() => this.addCol(false)}>Add Dynamic Column</button>
+                            <button class="btn" onClick={() => this.addCol(true)}>Add Static Column</button>
                         </td>
                         <td>
-                            <button class="btn" onClick={() => this.addCol(true)}>Add Static Column</button>
+                            <button class="btn" onClick={() => this.addCol(false)}>Add Dynamic Column</button>
                         </td>
                     </tr>
                 </table>
