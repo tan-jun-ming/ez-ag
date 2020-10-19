@@ -7,24 +7,46 @@ class TableComponent extends Component {
         this.state = {
             columns: [],
             rows: [],
-            data: [],
+            data: [], // columns, rows
         }
     }
 
     addCol(isStatic) {
         const columns = this.state.columns.slice();
         columns.push(new TableColumn(isStatic));
-        const consts = this.state.consts.map((const_row) => { return const_row.concat(null) });
-        this.setState({ columns: columns, consts: consts });
+        const data = this.state.data.map((const_row) => { return const_row.concat(null) });
+        this.setState({ columns: columns, data: data });
 
     }
 
     addRow(isStatic) {
         const rows = this.state.rows.slice();
         rows.push(new TableRow(isStatic));
-        const consts = this.state.consts.slice();
-        consts.push(Array(this.state.columns.length).fill(null));
-        this.setState({ rows: rows, consts: consts });
+        const data = this.state.data.slice();
+        data.push(Array(this.state.columns.length).fill(null));
+        this.setState({ rows: rows, data: data });
+    }
+
+    setCell(x, y, value) {
+        if (value === "") {
+            value = null;
+        }
+
+        const data = this.state.data.slice();
+        data[y][x] = value;
+        this.setState({ data: data });
+    }
+
+    setHeader(isRow, index, name) {
+        if (name === "") {
+            name = null;
+        }
+
+        let arr = (isRow ? this.state.rows : this.state.columns).slice();
+        arr[index].name = name;
+
+        let new_obj = isRow ? { rows: arr } : { columns: arr }
+        this.setState(new_obj);
     }
 
     render() {
@@ -32,10 +54,19 @@ class TableComponent extends Component {
 
         let column_headers = [];
         let table_cells = [];
-        for (let i = 0; i < this.state.rows.length; i++) {
-            let new_row = [
-                <TableHeaderComponent name={this.state.rows[i].name} index={i} />
-            ]
+
+        for (let i = 0; i < Math.max(this.state.rows.length, 1); i++) {
+
+            let new_row = []
+            if (this.state.rows.length >= 1) {
+                new_row.push(
+                    < TableHeaderComponent
+                        name={this.state.rows[i].name}
+                        isStatic={this.state.rows[i].isStatic}
+                        setvalue={(name) => { this.setHeader(true, i, name) }}
+                    />
+                );
+            }
 
             for (let u = 0; u < this.state.columns.length; u++) {
                 if (i === 0) {
@@ -43,42 +74,59 @@ class TableComponent extends Component {
                         <TableHeaderComponent
                             name={this.state.columns[u].name}
                             isStatic={this.state.columns[u].isStatic}
-                            index={u}
+                            setvalue={(name) => { this.setHeader(false, u, name) }}
                         />
                     )
                 }
-                new_row.push(
-                    <TableCellComponent
-                        value={table_data[i][u]}
-                        isStatic={this.state.rows[i].isStatic || this.state.columns[u].isStatic}
-                        pos_x={u}
-                        pos_u={i}
-                    />
-                )
+                if (this.state.rows.length >= 1) {
+                    new_row.push(
+                        <TableCellComponent
+                            value={table_data[i][u]}
+                            isStatic={this.state.rows[i].isStatic || this.state.columns[u].isStatic}
+                            setvalue={(value) => { this.setCell(u, i, value) }}
+                        />
+                    )
+                }
             }
 
-            table_cells.push(<tr>{new_row}</tr>);
+            if (this.state.rows.length) {
+                table_cells.push(<tr>{new_row}</tr>);
+            }
 
         }
 
 
         return (
             <div>
-                <button onClick={() => this.addRow(true)}>Add Static Row</button>
-                <button onClick={() => this.addCol(true)}>Add Static Column</button>
-                <button onClick={() => this.addRow(false)}>Add Dynamic Row</button>
-                <button onClick={() => this.addCol(false)}>Add Dynamic Column</button>
+                <table class="btn-tbl">
+                    <tr>
+                        <td>
+                            <button class="btn" onClick={() => this.addRow(true)}>Add Static Row</button>
+                        </td>
+                        <td>
+                            <button class="btn" onClick={() => this.addRow(false)}>Add Dynamic Row</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <button class="btn" onClick={() => this.addCol(false)}>Add Dynamic Column</button>
+                        </td>
+                        <td>
+                            <button class="btn" onClick={() => this.addCol(true)}>Add Static Column</button>
+                        </td>
+                    </tr>
+                </table>
 
                 <table>
                     <tbody>
                         <tr>
-                            <th></th>
+                            <th className="tbl-corner"></th>
                             {column_headers}
                         </tr>
                         {table_cells}
                     </tbody>
                 </table>
-            </div>
+            </div >
         );
     }
 }
@@ -105,9 +153,7 @@ function TableHeaderComponent(props) {
                 initialValue={props.name}
                 inputClass="table-header"
                 labelClass="table-label"
-                save={value => {
-                    console.log(`Saving '${value}'`);
-                }}
+                save={(value) => { props.setvalue(value) }}
             />
         </th>
     );
@@ -119,9 +165,7 @@ function TableCellComponent(props) {
             <EditableLabel
                 initialValue={props.value}
                 labelClass="table-label"
-                save={value => {
-                    console.log(`Saving '${value}'`);
-                }}
+                save={(value) => { props.setvalue(value) }}
 
             />
         </td>

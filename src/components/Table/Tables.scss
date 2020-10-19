@@ -24,10 +24,22 @@ th, .table-header {
     padding: 1em;
 }
 
-button {
+.static {
+    background-color: #d3fad2;
+}
+
+
+
+
+.btn {
+    width: 13em;
+    margin: 0;
+}
+
+.btn-tbl {
     margin-bottom: 1em;
 }
 
-.static {
-    background-color: #d3fad2;
+.btn-tbl, .btn-tbl th, .btn-tbl td {
+    border: none;
 }
