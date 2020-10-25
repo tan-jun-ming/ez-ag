@@ -13,25 +13,88 @@ class TableComponent extends Component {
         this.parser = new FormulaParser();
     }
 
+    _cell_is_formula(value) {
+        return value && String(value).startsWith("=");
+    }
+
     process_spreadsheet() {
-        let data = this.state.data.slice();
+        let data = JSON.parse(JSON.stringify(this.state.data));
         for (let x = 0; x < this.state.columns.length; x++) {
             for (let y = 0; y < this.state.rows.length; y++) {
                 let curr_cell = data[y][x];
-                if (curr_cell && curr_cell.startsWith("=")) {
-                    console.log(curr_cell);
-                    let result = this.parser.parse(curr_cell.substr(1));
-                    console.log(result)
-                    if (result.error === null) {
-                        data[y][x] = String(result.result);
-                    } else {
-                        data[y][x] = String(result.error);
-                    }
-                    console.log(data[y][x])
+                if (this._cell_is_formula(curr_cell)) {
+                    this.resolve_cell(x, y, new Set(), data, this._cell_is_formula, this.resolve_cell);
                 }
             }
         }
         return data;
+    }
+
+    resolve_cell(x, y, state, data, formula_check_func, resolve_func) {
+        // console.log("resolve cell called", x, y, state)
+        let ret = "#REF!";
+        if (!state.has(`${x},${y}`)) {
+            state.add(`${x},${y}`);
+
+            let curr_parser = new FormulaParser();
+
+            curr_parser.on("callCellValue", function (cellCoord, done) {
+                try {
+                    console.log(cellCoord)
+                    let new_x = cellCoord.column.index;
+                    let new_y = cellCoord.row.index;
+
+                    let curr_cell = data[new_y][new_x];
+                    console.log(curr_cell);
+
+                    if (formula_check_func(curr_cell)) {
+                        // console.log("calling resolve cell.....");
+                        resolve_func(new_x, new_y, state, data, formula_check_func, resolve_func);
+                        curr_cell = data[new_y][new_x];
+                    }
+
+                    done(curr_cell);
+                } catch (error) {
+                    console.error(error)
+                }
+            });
+
+            curr_parser.on("callRangeValue", function (startCellCoord, endCellCoord, done) {
+                let ret = [];
+
+                for (let i = startCellCoord.row.index; i <= endCellCoord.row.index; i++) {
+
+                    let row_ret = [];
+
+                    for (let u = startCellCoord.column.index; u <= endCellCoord.column.index; u++) {
+                        let curr_cell = data[i][u];
+                        if (formula_check_func(curr_cell)) {
+                            resolve_func(x, y, new Set(), data, formula_check_func, resolve_func);
+                            curr_cell = data[i][u];
+                        }
+                        row_ret.push(curr_cell);
+                    }
+                    ret.push(row_ret);
+                }
+
+                done(ret);
+            }
+
+
+            );
+
+            let result = curr_parser.parse(data[y][x].substr(1));
+
+            if (result.error === null) {
+                ret = String(result.result);
+            } else {
+                ret = String(result.error);
+            }
+        }
+
+
+        data[y][x] = ret;
+
     }
 
     addCol(isStatic) {
@@ -73,6 +136,7 @@ class TableComponent extends Component {
     }
 
     render() {
+        console.log("render called")
         let table_data = this.process_spreadsheet(); // TODO: use external method to calculate with formulas
 
         let column_headers = [];
@@ -102,7 +166,6 @@ class TableComponent extends Component {
                     )
                 }
                 if (this.state.rows.length >= 1) {
-                    console.log(table_data[i][u])
                     new_row.push(
                         <TableCellComponent
                             value={table_data[i][u]}
