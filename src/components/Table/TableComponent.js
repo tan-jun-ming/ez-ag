@@ -10,15 +10,14 @@ class TableComponent extends Component {
             rows: [],
             data: [], // columns, rows
         }
-        this.parser = new FormulaParser();
     }
 
     _cell_is_formula(value) {
-        return value && String(value).startsWith("=");
+        return value != null && String(value).startsWith("=");
     }
 
     process_spreadsheet() {
-        let data = JSON.parse(JSON.stringify(this.state.data));
+        let data = JSON.parse(JSON.stringify(this.state.data)); // I hate how theres no good deepcopy in js
         for (let x = 0; x < this.state.columns.length; x++) {
             for (let y = 0; y < this.state.rows.length; y++) {
                 let curr_cell = data[y][x];
@@ -60,39 +59,43 @@ class TableComponent extends Component {
             });
 
             curr_parser.on("callRangeValue", function (startCellCoord, endCellCoord, done) {
-                let ret = [];
+                try {
+                    let ret = [];
 
-                for (let i = startCellCoord.row.index; i <= endCellCoord.row.index; i++) {
+                    for (let i = startCellCoord.row.index; i <= endCellCoord.row.index; i++) {
 
-                    let row_ret = [];
+                        let row_ret = [];
 
-                    for (let u = startCellCoord.column.index; u <= endCellCoord.column.index; u++) {
-                        let curr_cell = data[i][u];
-                        if (formula_check_func(curr_cell)) {
-                            resolve_func(x, y, new Set(), data, formula_check_func, resolve_func);
-                            curr_cell = data[i][u];
+                        for (let u = startCellCoord.column.index; u <= endCellCoord.column.index; u++) {
+                            let curr_cell = data[i][u];
+                            if (formula_check_func(curr_cell)) {
+                                resolve_func(x, y, new Set(), data, formula_check_func, resolve_func);
+                                curr_cell = data[i][u];
+                            }
+                            row_ret.push(curr_cell);
                         }
-                        row_ret.push(curr_cell);
+                        ret.push(row_ret);
                     }
-                    ret.push(row_ret);
-                }
 
-                done(ret);
+                    done(ret);
+                } catch (error) {
+                    console.error(error)
+                }
             }
 
 
             );
 
-            let result = curr_parser.parse(data[y][x].substr(1));
+            let result = curr_parser.parse(String(data[y][x]).substr(1));
 
             if (result.error === null) {
-                ret = String(result.result);
+                ret = result.result;
             } else {
                 ret = String(result.error);
             }
         }
 
-
+        // console.log(typeof (ret))
         data[y][x] = ret;
 
     }
