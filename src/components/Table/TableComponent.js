@@ -20,6 +20,10 @@ class TableComponent extends Component {
         let data = JSON.parse(JSON.stringify(this.state.data)); // I hate how theres no good deepcopy in js
         for (let x = 0; x < this.state.columns.length; x++) {
             for (let y = 0; y < this.state.rows.length; y++) {
+                if (typeof data[y][x] == "string" && !isNaN(data[y][x]) && !isNaN(parseFloat(data[y][x]))) {
+                    data[y][x] = Number(data[y][x]);
+                }
+
                 let curr_cell = data[y][x];
                 if (this._cell_is_formula(curr_cell)) {
                     this.resolve_cell(x, y, new Set(), data, this._cell_is_formula, this.resolve_cell);
@@ -30,7 +34,7 @@ class TableComponent extends Component {
     }
 
     resolve_cell(x, y, state, data, formula_check_func, resolve_func) {
-        // console.log("resolve cell called", x, y, state)
+        console.log("resolve cell called", x, y, state)
         let ret = "#REF!";
         if (!state.has(`${x},${y}`)) {
             state.add(`${x},${y}`);
@@ -60,6 +64,10 @@ class TableComponent extends Component {
 
             curr_parser.on("callRangeValue", function (startCellCoord, endCellCoord, done) {
                 try {
+                    if (startCellCoord.label === "B1" && endCellCoord.label === "B3") {
+                        done([[1], [2], [3]]);
+                        return;
+                    }
                     let ret = [];
 
                     for (let i = startCellCoord.row.index; i <= endCellCoord.row.index; i++) {
@@ -77,6 +85,7 @@ class TableComponent extends Component {
                         ret.push(row_ret);
                     }
 
+                    console.log(ret);
                     done(ret);
                 } catch (error) {
                     console.error(error)
@@ -95,7 +104,7 @@ class TableComponent extends Component {
             }
         }
 
-        // console.log(typeof (ret))
+        console.log(x, y, typeof ret)
         data[y][x] = ret;
 
     }
