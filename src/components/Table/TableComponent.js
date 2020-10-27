@@ -285,18 +285,51 @@ function TableHeaderComponent(props) {
 }
 
 class TableCellComponent extends Component {
+    constructor(props, context) {
+        super(props, context);
+
+        this.state = {
+            curr_value: props.raw_value,
+            editing: false,
+        };
+
+        this.input = null;
+        this._handleKeyDown = this._handleKeyDown.bind(this);
+    }
+
+    toggle_edit() {
+        console.log("edit toggled")
+
+        this.setState({
+            editing: !this.state.editing,
+        });
+
+    }
+
+    _handleKeyDown(e) {
+        if (e.key === "Enter") {
+            e.currentTarget.blur();
+        } else if (e.key === "Escape") {
+            // this.setState({ curr_value: this.props.raw_value });
+            this.state.curr_value = this.props.raw_value;
+            e.currentTarget.blur();
+        }
+    }
+
     render() {
         return (
             <td className={this.props.isStatic ? "static" : ""} >
 
-                <input
-                    value={this.props.raw_value}
-                    onBlur={(e) => { this.props.setvalue(e.target.value) }}
-                    onChange={(e) => { }}
-                />
-                <div>
+                { this.state.editing && <input
+                    autoFocus
+                    value={this.state.curr_value}
+                    onBlur={(e) => { this.props.setvalue(this.state.curr_value); this.toggle_edit() }}
+                    onChange={(e) => { this.setState({ curr_value: e.target.value }) }}
+                    onKeyDown={this._handleKeyDown}
+                />}
+                { !this.state.editing && <div className="tbl-div" onClick={() => { this.toggle_edit() }}>
                     {this.props.value}
-                </div>
+                </div>}
             </td>
         );
     }

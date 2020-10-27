@@ -6,11 +6,13 @@ table, th, td {
     border: 1px solid lightgrey;
 }
 
-// th, td {
-//     padding: 1em;
-// }
+th, td {
+    height: 3em;
+}
 
 th, .table-header {
+    padding-left: 1em;
+    padding-right: 1em;
     font-weight: bold;
     font-size: 1em;
 }
@@ -21,14 +23,11 @@ th, .table-header {
 
 .table-label {
     display: block;
-    padding: 1em;
 }
 
 .static {
     background-color: #d3fad2;
 }
-
-
 
 
 .btn {
@@ -42,4 +41,8 @@ th, .table-header {
 
 .btn-tbl, .btn-tbl th, .btn-tbl td {
     border: none;
+}
+
+.tbl-div {
+    height: 100%;
 }
