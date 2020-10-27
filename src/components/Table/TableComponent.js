@@ -168,7 +168,8 @@ class TableComponent extends Component {
 
     render() {
         console.log("render called")
-        let table_data = this.process_spreadsheet(); // TODO: use external method to calculate with formulas
+        let table_data = this.process_spreadsheet();
+        let raw_data = this.state.data;
 
         let column_headers = [];
         let table_cells = [];
@@ -179,6 +180,7 @@ class TableComponent extends Component {
             if (this.state.rows.length >= 1) {
                 new_row.push(
                     < TableHeaderComponent
+                        key={`rowheader-${i}`}
                         name={this.state.rows[i].name}
                         isStatic={this.state.rows[i].isStatic}
                         setvalue={(name) => { this.setHeader(true, i, name) }}
@@ -190,6 +192,7 @@ class TableComponent extends Component {
                 if (i === 0) {
                     column_headers.push(
                         <TableHeaderComponent
+                            key={`colheader-${u}`}
                             name={this.state.columns[u].name}
                             isStatic={this.state.columns[u].isStatic}
                             setvalue={(name) => { this.setHeader(false, u, name) }}
@@ -199,7 +202,9 @@ class TableComponent extends Component {
                 if (this.state.rows.length >= 1) {
                     new_row.push(
                         <TableCellComponent
+                            key={`${i}-${u}`}
                             value={table_data[i][u]}
+                            raw_value={raw_data[i][u] != null ? raw_data[i][u] : ""}
                             isStatic={this.state.rows[i].isStatic || this.state.columns[u].isStatic}
                             setvalue={(value) => { this.setCell(u, i, value) }}
                         />
@@ -208,7 +213,7 @@ class TableComponent extends Component {
             }
 
             if (this.state.rows.length) {
-                table_cells.push(<tr>{new_row}</tr>);
+                table_cells.push(<tr key={`row-${i}`}>{new_row}</tr>);
             }
 
         }
@@ -216,23 +221,25 @@ class TableComponent extends Component {
 
         return (
             <div>
-                <table class="btn-tbl">
-                    <tr>
-                        <td>
-                            <button class="btn" onClick={() => this.addRow(true)}>Add Static Row</button>
-                        </td>
-                        <td>
-                            <button class="btn" onClick={() => this.addRow(false)}>Add Dynamic Row</button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <button class="btn" onClick={() => this.addCol(true)}>Add Static Column</button>
-                        </td>
-                        <td>
-                            <button class="btn" onClick={() => this.addCol(false)}>Add Dynamic Column</button>
-                        </td>
-                    </tr>
+                <table className="btn-tbl">
+                    <tbody>
+                        <tr>
+                            <td>
+                                <button className="btn" onClick={() => this.addRow(true)}>Add Static Row</button>
+                            </td>
+                            <td>
+                                <button className="btn" onClick={() => this.addRow(false)}>Add Dynamic Row</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <button className="btn" onClick={() => this.addCol(true)}>Add Static Column</button>
+                            </td>
+                            <td>
+                                <button className="btn" onClick={() => this.addCol(false)}>Add Dynamic Column</button>
+                            </td>
+                        </tr>
+                    </tbody>
                 </table>
 
                 <table>
@@ -283,8 +290,9 @@ class TableCellComponent extends Component {
             <td className={this.props.isStatic ? "static" : ""} >
 
                 <input
+                    value={this.props.raw_value}
                     onBlur={(e) => { this.props.setvalue(e.target.value) }}
-
+                    onChange={(e) => { }}
                 />
                 <div>
                     {this.props.value}
