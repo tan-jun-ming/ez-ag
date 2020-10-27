@@ -111,15 +111,34 @@ class TableComponent extends Component {
 
     addCol(isStatic) {
         const columns = this.state.columns.slice();
-        columns.push(new TableColumn(isStatic));
+        let new_col = new TableColumn(isStatic);
+
+        new_col.name = this.get_column_letters(columns.length + 1);
+        columns.push(new_col);
+
         const data = this.state.data.map((const_row) => { return const_row.concat(null) });
         this.setState({ columns: columns, data: data });
+    }
 
+    get_column_letters(num) {
+        let letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        let ret = [];
+
+        while (num >= 1) {
+            ret.push(letters[(num - 1) % letters.length])
+            num = Math.floor((num - 1) / letters.length);
+        }
+
+        return ret.reverse().join("");
     }
 
     addRow(isStatic) {
         const rows = this.state.rows.slice();
-        rows.push(new TableRow(isStatic));
+        let new_row = new TableRow(isStatic);
+
+        new_row.name = String(rows.length + 1);
+        rows.push(new_row);
+
         const data = this.state.data.slice();
         data.push(Array(this.state.columns.length).fill(null));
         this.setState({ rows: rows, data: data });
