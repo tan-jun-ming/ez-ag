@@ -20,6 +20,7 @@ import 'firebase/database';
   
       this.auth = app.auth();
       this.db = app.database();
+      this.provider = new app.auth.GoogleAuthProvider();
     }
   
     // *** Auth API ***
@@ -36,6 +37,10 @@ import 'firebase/database';
   
     doPasswordUpdate = password =>
       this.auth.currentUser.updatePassword(password);
+
+    doGoogleSignIn = () => {
+      return this.auth.signInWithPopup(this.provider);
+    }
   
     // *** User API ***
   

@@ -7,6 +7,7 @@ import { withFirebase } from '../Firebase';
 import * as ROUTES from '../../constants/routes';
 import { PasswordForgetLink } from '../PasswordForget';
  
+
 const SignInPage = () => (
   <div>
     <h1>SignIn</h1>
@@ -27,6 +28,17 @@ class SignInFormBase extends Component {
     super(props);
  
     this.state = { ...INITIAL_STATE };
+  }
+
+  onGoogleSignIn = () => {
+    this.props.firebase.doGoogleSignIn()
+    .then(()=> {
+      this.setState({ ...INITIAL_STATE });
+      this.props.history.push(ROUTES.HOME);
+    })
+    .catch(error => {
+      this.setState({ error });
+    });
   }
  
   onSubmit = event => {
@@ -55,31 +67,52 @@ class SignInFormBase extends Component {
     const isInvalid = password === '' || email === '';
  
     return (
-      <form onSubmit={this.onSubmit}>
-        <input
-          name="email"
-          value={email}
-          onChange={this.onChange}
-          type="text"
-          placeholder="Email Address"
-        />
-        <input
-          name="password"
-          value={password}
-          onChange={this.onChange}
-          type="password"
-          placeholder="Password"
-        />
-        <button disabled={isInvalid} type="submit">
-          Sign In
-        </button>
- 
-        {error && <p>{error.message}</p>}
-      </form>
+      <div>
+        <form onSubmit={this.onSubmit}>
+          <input
+            name="email"
+            value={email}
+            onChange={this.onChange}
+            type="text"
+            placeholder="Email Address"
+          />
+          <input
+            name="password"
+            value={password}
+            onChange={this.onChange}
+            type="password"
+            placeholder="Password"
+          />
+          <button disabled={isInvalid} type="submit">
+            Sign In
+          </button>
+
+          <button onClick={() => {
+            this.onGoogleSignIn();
+          }}
+          style={{
+            color: "white",
+            backgroundColor: "red",
+            padding: ".5rem",
+            border: 0,
+            borderRadius: "4px",
+            fontWeight: 800,
+            fontFamily: "unset"
+          }}
+          >
+            Sign in with Google
+          </button>
+  
+          {error && <p>{error.message}</p>}
+        </form>
+
+
+      </div>
     );
   }
 }
  
+
 const SignInForm = compose(
   withRouter,
   withFirebase,
