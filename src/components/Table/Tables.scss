@@ -1,0 +1,48 @@
+table {
+    border-collapse: collapse;
+}
+
+table, th, td {
+    border: 1px solid lightgrey;
+}
+
+th, td {
+    height: 3em;
+}
+
+th, .table-header {
+    padding-left: 1em;
+    padding-right: 1em;
+    font-weight: bold;
+    font-size: 1em;
+}
+
+.table-header {
+    font-size: 1em;
+}
+
+.table-label {
+    display: block;
+}
+
+.static {
+    background-color: #d3fad2;
+}
+
+
+.btn {
+    width: 13em;
+    margin: 0;
+}
+
+.btn-tbl {
+    margin-bottom: 1em;
+}
+
+.btn-tbl, .btn-tbl th, .btn-tbl td {
+    border: none;
+}
+
+.tbl-div {
+    height: 100%;
+}
