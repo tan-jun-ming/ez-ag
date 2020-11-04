@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import EditableLabel from 'react-editable-label';
 import { Parser as FormulaParser } from 'hot-formula-parser';
+import { Firebase } from '../Firebase/firebase';
 
 class TableComponent extends Component {
     constructor(props) {
@@ -117,7 +118,11 @@ class TableComponent extends Component {
         columns.push(new_col);
 
         const data = this.state.data.map((const_row) => { return const_row.concat(null) });
-        this.setState({ columns: columns, data: data });
+
+        let ret = { columns: columns, data: data }
+
+        Firebase.db.ref("/table").update(ret);
+        this.setState(ret);
     }
 
     get_column_letters(num) {
@@ -141,7 +146,11 @@ class TableComponent extends Component {
 
         const data = this.state.data.slice();
         data.push(Array(this.state.columns.length).fill(null));
-        this.setState({ rows: rows, data: data });
+
+        let ret = { rows: rows, data: data };
+
+        Firebase.db.ref("/table").update(ret);
+        this.setState(ret);
     }
 
     setCell(x, y, value) {
@@ -151,7 +160,11 @@ class TableComponent extends Component {
 
         const data = this.state.data.slice();
         data[y][x] = value;
-        this.setState({ data: data });
+
+        let ret = { data: data };
+
+        Firebase.db.ref("/table").update(ret);
+        this.setState(ret);
     }
 
     setHeader(isRow, index, name) {
