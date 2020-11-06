@@ -10,7 +10,7 @@ import PasswordForgetPage from '../PasswordForget';
 import HomePage from '../Home';
 import AccountPage from '../Account';
 import AdminPage from '../Admin';
-import TablePage from '../Table/TableComponent';
+import TablePage from '../Table';
 
 
 import { withAuthentication } from '../Session';

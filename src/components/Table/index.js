@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
+import { withRouter } from 'react-router-dom';
+import { compose } from 'recompose';
 import EditableLabel from 'react-editable-label';
 import { Parser as FormulaParser } from 'hot-formula-parser';
-import { Firebase } from '../Firebase/firebase';
+import { withFirebase } from '../Firebase';
 
 class TableComponent extends Component {
     constructor(props) {
@@ -121,7 +123,7 @@ class TableComponent extends Component {
 
         let ret = { columns: columns, data: data }
 
-        Firebase.db.ref("/table").update(ret);
+        this.props.firebase.db.ref("/table").update(ret);
         this.setState(ret);
     }
 
@@ -149,7 +151,7 @@ class TableComponent extends Component {
 
         let ret = { rows: rows, data: data };
 
-        Firebase.db.ref("/table").update(ret);
+        this.props.firebase.db.ref("/table").update(ret);
         this.setState(ret);
     }
 
@@ -163,7 +165,7 @@ class TableComponent extends Component {
 
         let ret = { data: data };
 
-        Firebase.db.ref("/table").update(ret);
+        this.props.firebase.db.ref("/table").update(ret);
         this.setState(ret);
     }
 
@@ -348,4 +350,11 @@ class TableCellComponent extends Component {
     }
 }
 
+const TablePage = compose(
+    () => { return <div>hello</div> },
+    withRouter,
+    withFirebase,
+)(TableComponent);
+
 export default TableComponent;
+export { TablePage };
