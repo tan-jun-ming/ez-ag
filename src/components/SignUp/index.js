@@ -5,11 +5,13 @@ import { compose } from 'recompose';
 import { withFirebase } from '../Firebase';
 import * as ROUTES from '../../constants/routes';
 
+import './signup.css';
 
 const SignUpPage = () => (
   <div>
-    <h1>SignUp</h1>
-    <SignUpForm />
+    <div class = 'container'>
+      <SignUpForm />
+    </div>
   </div>
 );
 
@@ -76,6 +78,9 @@ class SignUpFormBase extends Component {
 
     return (
       <form onSubmit={this.onSubmit}>
+        <div class = 'container' id = 'signupform'>
+        <h1>Ez-Ag Sign In</h1>
+        <label for = 'name'><b>Enter Full Name</b></label>
          <input
           name="username"
           value={username}
@@ -83,6 +88,7 @@ class SignUpFormBase extends Component {
           type="text"
           placeholder="Full Name"
         />
+        <label for = 'email'><b>Enter Email</b></label>
         <input
           name="email"
           value={email}
@@ -90,6 +96,7 @@ class SignUpFormBase extends Component {
           type="text"
           placeholder="Email Address"
         />
+        <label for = 'password'><b>Enter Password</b></label>
         <input
           name="passwordOne"
           value={passwordOne}
@@ -97,6 +104,7 @@ class SignUpFormBase extends Component {
           type="password"
           placeholder="Password"
         />
+        <label for = 'repassword'><b>Confirm Password</b></label>
         <input
           name="passwordTwo"
           value={passwordTwo}
@@ -104,9 +112,10 @@ class SignUpFormBase extends Component {
           type="password"
           placeholder="Confirm Password"
         />
-        <button disabled={isInvalid} type="submit">
+        <button id = 'signup' disabled={isInvalid} type="submit">
           Sign Up
         </button>
+        </div>
  
         {error && <p>{error.message}</p>}
       </form>
