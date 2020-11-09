@@ -351,10 +351,9 @@ class TableCellComponent extends Component {
 }
 
 const TablePage = compose(
-    () => { return <div>hello</div> },
     withRouter,
     withFirebase,
 )(TableComponent);
 
-export default TableComponent;
-export { TablePage };
+// export default TableComponent;
+export default TablePage;
