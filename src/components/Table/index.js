@@ -4,6 +4,7 @@ import { compose } from 'recompose';
 import EditableLabel from 'react-editable-label';
 import { Parser as FormulaParser } from 'hot-formula-parser';
 import { withFirebase } from '../Firebase';
+import './Tables.scss'
 
 class TableComponent extends Component {
     constructor(props) {
@@ -123,7 +124,7 @@ class TableComponent extends Component {
 
         let ret = { columns: columns, data: data }
 
-        this.props.firebase.db.ref("/table").update(ret);
+        // this.props.firebase.db.ref("/table").update(ret);
         this.setState(ret);
     }
 
@@ -151,7 +152,7 @@ class TableComponent extends Component {
 
         let ret = { rows: rows, data: data };
 
-        this.props.firebase.db.ref("/table").update(ret);
+        // this.props.firebase.db.ref("/table").update(ret);
         this.setState(ret);
     }
 
@@ -165,7 +166,7 @@ class TableComponent extends Component {
 
         let ret = { data: data };
 
-        this.props.firebase.db.ref("/table").update(ret);
+        // this.props.firebase.db.ref("/table").update(ret);
         this.setState(ret);
     }
 
