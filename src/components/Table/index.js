@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { withRouter } from 'react-router-dom';
 import { compose } from 'recompose';
-import EditableLabel from 'react-editable-label';
 import { Parser as FormulaParser } from 'hot-formula-parser';
 import { withFirebase } from '../Firebase';
 import './Tables.scss'
