@@ -13,13 +13,15 @@ import 'firebase/database';
     measurementId: "G-B5K37HFC9T"
   };
 
+  
+
 
   class Firebase {
     constructor() {
       app.initializeApp(config);
   
       this.auth = app.auth();
-      this.db = app.database();
+      this.db = app.firestore();
       this.provider = new app.auth.GoogleAuthProvider();
     }
   
