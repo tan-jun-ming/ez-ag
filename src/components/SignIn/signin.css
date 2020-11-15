@@ -9,6 +9,12 @@ form {border: 3px solid #f1f1f1;}
     padding: 16%;
 }
 
+#gbttn{
+  border: none;
+  cursor: pointer;
+  width: auto;
+}
+
 input[type=text], input[type=password] {
   width: 100%;
   padding: 12px 20px;
