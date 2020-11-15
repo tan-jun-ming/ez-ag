@@ -272,6 +272,11 @@ class TableComponent extends Component {
 
         return (
             <div>
+                <ul>
+                    <li>Table ID: {this.props.id}</li>
+                    <li>Date: {this.props.date}</li>
+                    <li>Block: {this.props.block}</li>
+                </ul>
                 <table className="btn-tbl">
                     <tbody>
                         <tr>

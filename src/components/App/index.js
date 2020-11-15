@@ -36,7 +36,17 @@ const App = () => (
             <Route path={ROUTES.HOME} component={HomePage} />
             <Route path={ROUTES.ACCOUNT} component={AccountPage} />
             <Route path={ROUTES.ADMIN} component={AdminPage} />
-            <Route path={ROUTES.TABLE} component={TablePage} />
+            <Route path={ROUTES.TABLE + "/:table_id/:table_date/:table_block"}
+                render={({ match }) => {
+                    return <TablePage
+                        id={match.params.table_id}
+                        date={match.params.table_date}
+                        block={match.params.table_block}
+
+                    />
+                }
+
+                } />
         </div>
     </Router>
 );
