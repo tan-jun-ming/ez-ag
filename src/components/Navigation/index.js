@@ -30,7 +30,7 @@ const NavigationAuth = () => (
             <Link to={ROUTES.ADMIN}>Admin</Link>
         </li>
         <li>
-            <Link to={ROUTES.TABLE + "/1234ABCD/2020-12-10/24"}>Table</Link>
+            <Link to={ROUTES.TABLE}>Table</Link>
         </li>
         <li>
             <SignOutButton />

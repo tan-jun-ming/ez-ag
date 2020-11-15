@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Redirect, Route } from 'react-router-dom';
 import { withFirebase } from '../Firebase';
 
 import Navigation from '../Navigation';
@@ -11,6 +11,7 @@ import HomePage from '../Home';
 import AccountPage from '../Account';
 import AdminPage from '../Admin';
 import TablePage from '../Table';
+import TableListPage from '../Table/list';
 
 
 import { withAuthentication } from '../Session';
@@ -36,6 +37,7 @@ const App = () => (
             <Route path={ROUTES.HOME} component={HomePage} />
             <Route path={ROUTES.ACCOUNT} component={AccountPage} />
             <Route path={ROUTES.ADMIN} component={AdminPage} />
+            <Route exact path={ROUTES.TABLE} component={TableListPage} />
             <Route path={ROUTES.TABLE + "/:table_id/:table_date/:table_block"}
                 render={({ match }) => {
                     return <TablePage
@@ -46,6 +48,16 @@ const App = () => (
                     />
                 }
 
+                } />
+            <Route exact path={ROUTES.TABLE + "/:table_id"}
+                render={({ match }) => (
+                    <Redirect to={`${ROUTES.TABLE}/${match.params.table_id}/2020-12-10/1`} />
+                )
+                } />
+            <Route exact path={ROUTES.TABLE + "/:table_id/:table_date"}
+                render={({ match }) => (
+                    <Redirect to={`${ROUTES.TABLE}/${match.params.table_id}/${match.params.table_date}/1`} />
+                )
                 } />
         </div>
     </Router>
