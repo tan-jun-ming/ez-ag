@@ -4,7 +4,7 @@ class Home extends Component {
   render() {
     return (
         <div>
-          <h2>Home! Route Testing</h2>
+          <h2>home</h2>
         </div>
     );
   }

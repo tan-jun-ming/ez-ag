@@ -16,7 +16,6 @@ import TableListPage from '../Table/list';
 
 import { withAuthentication } from '../Session';
 
-
 import { AuthUserContext } from '../Session';
 import * as ROUTES from '../../constants/routes';
 
