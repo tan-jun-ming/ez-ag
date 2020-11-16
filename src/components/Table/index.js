@@ -1,6 +1,9 @@
 import React, { Component } from 'react';
-import EditableLabel from 'react-editable-label';
+import { withRouter } from 'react-router-dom';
+import { compose } from 'recompose';
 import { Parser as FormulaParser } from 'hot-formula-parser';
+import { withFirebase } from '../Firebase';
+import './Tables.scss'
 
 class TableComponent extends Component {
     constructor(props) {
@@ -117,7 +120,28 @@ class TableComponent extends Component {
         columns.push(new_col);
 
         const data = this.state.data.map((const_row) => { return const_row.concat(null) });
-        this.setState({ columns: columns, data: data });
+
+        let ret = { columns: columns, data: data }
+
+        // this.props.firebase.db.ref("/table").update(ret);
+        this.setState(ret);
+    }
+
+    delete_col(ind) {
+        const cols = this.state.columns.slice();
+
+        cols.splice(ind, 1);
+
+        const data = this.state.data.slice();
+        for (let i = 0; i < data.length; i++) {
+            data[i].splice(ind, 1);
+        }
+
+        let ret = { columns: cols, data: data }
+
+        // this.props.firebase.db.ref("/table").update(ret);
+        this.setState(ret);
+
     }
 
     get_column_letters(num) {
@@ -141,8 +165,29 @@ class TableComponent extends Component {
 
         const data = this.state.data.slice();
         data.push(Array(this.state.columns.length).fill(null));
-        this.setState({ rows: rows, data: data });
+
+        let ret = { rows: rows, data: data };
+
+        // this.props.firebase.db.ref("/table").update(ret);
+        this.setState(ret);
     }
+
+
+    delete_row(ind) {
+        const rows = this.state.rows.slice();
+
+        rows.splice(ind, 1);
+
+        const data = this.state.data.slice();
+        data.splice(ind, 1);
+
+        let ret = { rows: rows, data: data };
+
+        // this.props.firebase.db.ref("/table").update(ret);
+        this.setState(ret);
+
+    }
+
 
     setCell(x, y, value) {
         if (value === "") {
@@ -151,7 +196,11 @@ class TableComponent extends Component {
 
         const data = this.state.data.slice();
         data[y][x] = value;
-        this.setState({ data: data });
+
+        let ret = { data: data };
+
+        // this.props.firebase.db.ref("/table").update(ret);
+        this.setState(ret);
     }
 
     setHeader(isRow, index, name) {
@@ -184,6 +233,7 @@ class TableComponent extends Component {
                         name={this.state.rows[i].name}
                         isStatic={this.state.rows[i].isStatic}
                         setvalue={(name) => { this.setHeader(true, i, name) }}
+                        delete={() => { this.delete_row(i) }}
                     />
                 );
             }
@@ -196,6 +246,7 @@ class TableComponent extends Component {
                             name={this.state.columns[u].name}
                             isStatic={this.state.columns[u].isStatic}
                             setvalue={(name) => { this.setHeader(false, u, name) }}
+                            delete={() => { this.delete_col(u) }}
                         />
                     )
                 }
@@ -221,6 +272,11 @@ class TableComponent extends Component {
 
         return (
             <div>
+                <ul>
+                    <li>Table ID: {this.props.id}</li>
+                    <li>Date: {this.props.date}</li>
+                    <li>Block: {this.props.block}</li>
+                </ul>
                 <table className="btn-tbl">
                     <tbody>
                         <tr>
@@ -271,17 +327,64 @@ class TableRow {
     }
 }
 
-function TableHeaderComponent(props) {
-    return (
-        <th className={props.isStatic ? "static" : ""}>
-            <EditableLabel
-                initialValue={props.name}
-                inputClass="table-header"
-                labelClass="table-label"
-                save={(value) => { props.setvalue(value) }}
-            />
-        </th>
-    );
+class TableHeaderComponent extends Component {
+    constructor(props, context) {
+        super(props, context);
+
+        this.state = {
+            curr_value: props.name,
+            editing: false,
+        };
+
+        this.input = null;
+        this._handleKeyDown = this._handleKeyDown.bind(this);
+    }
+
+    toggle_edit() {
+        console.log("edit toggled")
+
+        this.setState({
+            editing: !this.state.editing,
+        });
+
+    }
+
+    _handleKeyDown(e) {
+        if (e.key === "Enter") {
+            e.currentTarget.blur();
+        } else if (e.key === "Escape") {
+            this.state.curr_value = this.props.name;
+            e.currentTarget.blur();
+        }
+    }
+
+    render() {
+
+        return (
+
+            <td className={this.props.isStatic ? "static" : ""} >
+
+                <button
+                    className="close-button"
+                    onClick={() => { this.props.delete() }}
+                >
+                    X
+                </button>
+                { this.state.editing && <input
+                    className="table-header"
+                    autoFocus
+                    value={this.state.curr_value}
+                    onBlur={(e) => { this.props.setvalue(this.state.curr_value); this.toggle_edit() }}
+                    onChange={(e) => { this.setState({ curr_value: e.target.value }) }}
+                    onKeyDown={this._handleKeyDown}
+                />}
+                { !this.state.editing && <div className="table-header" onClick={() => { this.toggle_edit() }}>
+                    {this.props.name}
+                </div>}
+            </td>
+        );
+
+    }
 }
 
 class TableCellComponent extends Component {
@@ -310,7 +413,6 @@ class TableCellComponent extends Component {
         if (e.key === "Enter") {
             e.currentTarget.blur();
         } else if (e.key === "Escape") {
-            // this.setState({ curr_value: this.props.raw_value });
             this.state.curr_value = this.props.raw_value;
             e.currentTarget.blur();
         }
@@ -335,4 +437,10 @@ class TableCellComponent extends Component {
     }
 }
 
-export default TableComponent;
+const TablePage = compose(
+    withRouter,
+    withFirebase,
+)(TableComponent);
+
+// export default TableComponent;
+export default TablePage;
