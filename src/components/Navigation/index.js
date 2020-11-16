@@ -32,7 +32,6 @@ const NavigationNonAuth = () => (
     <li><Link to={ROUTES.LANDING}> Ez-Ag </Link></li>
     <li style = {{float:'right'}}><Link to={ROUTES.SIGN_IN}> Sign In</Link></li>
     <li style = {{float:'right'}}><Link to={ROUTES.SIGN_UP}> Sign Up </Link></li>
-  </ul>
         <li>
           <Link to={ROUTES.LANDING}>Landing</Link>
         </li>
