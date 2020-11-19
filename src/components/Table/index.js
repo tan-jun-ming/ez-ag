@@ -8,6 +8,7 @@ import './Tables.scss'
 class TableComponent extends Component {
     constructor(props) {
         super(props);
+        this.props.document = this.props.firebase.fs.collection("tables").doc(this.props.id);
         this.state = {
             columns: [],
             rows: [],
@@ -112,6 +113,14 @@ class TableComponent extends Component {
 
     }
 
+    serialize_data(data){
+
+        return data.map((dt) => { return {
+            0: dt,
+
+        }});
+    }
+
     addCol(isStatic) {
         const columns = this.state.columns.slice();
         let new_col = new TableColumn(isStatic);
@@ -123,7 +132,10 @@ class TableComponent extends Component {
 
         let ret = { columns: columns, data: data }
 
-        // this.props.firebase.db.ref("/table").update(ret);
+
+        this.props.document.update({
+            schema: { columns: columns, data: this.serialize_data(data) }
+        });
         this.setState(ret);
     }
 
@@ -139,7 +151,10 @@ class TableComponent extends Component {
 
         let ret = { columns: cols, data: data }
 
-        // this.props.firebase.db.ref("/table").update(ret);
+        this.props.document.update({
+            schema: { columns: cols, data: this.serialize_data(data) }
+        });
+        
         this.setState(ret);
 
     }
@@ -317,6 +332,16 @@ class TableColumn {
         this.name = "New Column";
         this.isStatic = isStatic;
     }
+    serialize() {
+        return {
+            name: this.name,
+            isStatic : this.isStatic
+        }
+    }
+    static from(json){
+        return Object.assign(new TableColumn(), json);
+    }
+
 }
 
 
@@ -325,7 +350,19 @@ class TableRow {
         this.name = "New Row";
         this.isStatic = isStatic;
     }
+    serialize() {
+        return {
+            name: this.name,
+            isStatic : this.isStatic
+        }
+    }
+    static from(json){
+        return Object.assign(new TableRow(), json);
+    }
+     
+
 }
+    
 
 class TableHeaderComponent extends Component {
     constructor(props, context) {
