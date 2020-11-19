@@ -9,7 +9,7 @@ class TableComponent extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            document = this.props.firebase.fs.collection("tables").doc(this.props.id);
+            document: this.props.firebase.fs.collection("tables").doc(this.props.id),
             columns: [],
             rows: [],
             data: [], // columns, rows
@@ -123,6 +123,14 @@ class TableComponent extends Component {
         });
     }
 
+    serialize_headers(headers) {
+
+        return headers.map((dt) => {
+            return dt.serialize();
+
+        });
+    }
+
     addCol(isStatic) {
         const columns = this.state.columns.slice();
         let new_col = new TableColumn(isStatic);
@@ -136,25 +144,25 @@ class TableComponent extends Component {
 
 
         this.state.document.update({
-            schema: { columns: columns, data: this.serialize_data(data) }
+            schema: { columns: this.serialize_headers(columns), data: this.serialize_data(data) }
         });
         this.setState(ret);
     }
 
     delete_col(ind) {
-        const cols = this.state.columns.slice();
+        const columns = this.state.columns.slice();
 
-        cols.splice(ind, 1);
+        columns.splice(ind, 1);
 
         const data = this.state.data.slice();
         for (let i = 0; i < data.length; i++) {
             data[i].splice(ind, 1);
         }
 
-        let ret = { columns: cols, data: data }
+        let ret = { columns: columns, data: data }
 
         this.state.document.update({
-            schema: { columns: cols, data: this.serialize_data(data) }
+            schema: { columns: this.serialize_headers(columns), data: this.serialize_data(data) }
         });
 
         this.setState(ret);
@@ -185,7 +193,9 @@ class TableComponent extends Component {
 
         let ret = { rows: rows, data: data };
 
-        // this.props.firebase.db.ref("/table").update(ret);
+        this.state.document.update({
+            schema: { rows: this.serialize_headers(rows), data: this.serialize_data(data) }
+        });
         this.setState(ret);
     }
 
@@ -200,7 +210,9 @@ class TableComponent extends Component {
 
         let ret = { rows: rows, data: data };
 
-        // this.props.firebase.db.ref("/table").update(ret);
+        this.state.document.update({
+            schema: { rows: this.serialize_headers(rows), data: this.serialize_data(data) }
+        });
         this.setState(ret);
 
     }
@@ -216,7 +228,10 @@ class TableComponent extends Component {
 
         let ret = { data: data };
 
-        // this.props.firebase.db.ref("/table").update(ret);
+        this.state.document.update({
+            schema: {data: this.serialize_data(data) }
+        });
+
         this.setState(ret);
     }
 
