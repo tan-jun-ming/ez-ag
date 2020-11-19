@@ -8,8 +8,8 @@ import './Tables.scss'
 class TableComponent extends Component {
     constructor(props) {
         super(props);
-        this.props.document = this.props.firebase.fs.collection("tables").doc(this.props.id);
         this.state = {
+            document = this.props.firebase.fs.collection("tables").doc(this.props.id);
             columns: [],
             rows: [],
             data: [], // columns, rows
@@ -113,12 +113,14 @@ class TableComponent extends Component {
 
     }
 
-    serialize_data(data){
+    serialize_data(data) {
 
-        return data.map((dt) => { return {
-            0: dt,
+        return data.map((dt) => {
+            return {
+                0: dt,
 
-        }});
+            }
+        });
     }
 
     addCol(isStatic) {
@@ -133,7 +135,7 @@ class TableComponent extends Component {
         let ret = { columns: columns, data: data }
 
 
-        this.props.document.update({
+        this.state.document.update({
             schema: { columns: columns, data: this.serialize_data(data) }
         });
         this.setState(ret);
@@ -151,10 +153,10 @@ class TableComponent extends Component {
 
         let ret = { columns: cols, data: data }
 
-        this.props.document.update({
+        this.state.document.update({
             schema: { columns: cols, data: this.serialize_data(data) }
         });
-        
+
         this.setState(ret);
 
     }
@@ -335,10 +337,10 @@ class TableColumn {
     serialize() {
         return {
             name: this.name,
-            isStatic : this.isStatic
+            isStatic: this.isStatic
         }
     }
-    static from(json){
+    static from(json) {
         return Object.assign(new TableColumn(), json);
     }
 
@@ -353,16 +355,16 @@ class TableRow {
     serialize() {
         return {
             name: this.name,
-            isStatic : this.isStatic
+            isStatic: this.isStatic
         }
     }
-    static from(json){
+    static from(json) {
         return Object.assign(new TableRow(), json);
     }
-     
+
 
 }
-    
+
 
 class TableHeaderComponent extends Component {
     constructor(props, context) {
