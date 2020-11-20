@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { withRouter,Redirect } from 'react-router-dom';
+import { withRouter, Redirect } from 'react-router-dom';
 import { compose } from 'recompose';
 import { Parser as FormulaParser } from 'hot-formula-parser';
 import { withFirebase } from '../Firebase';
@@ -17,15 +17,21 @@ class TableComponent extends Component {
             rows: [],
             data: [], // columns, rows
         }
-        document.get().then((resp)=>{
-            this.setState({
+        document.get().then((resp) => {
+            let ret = {
                 valid: resp.exists
-            })
-            // console.log(resp)
+            }
+            if (ret.valid) {
+                let data = resp.data();
+                ret.columns = data.columns.map((col) => { return TableColumn.from(col) });
+                ret.rows = data.rows.map((row) => { return TableRow.from(row) });
+                ret.data = this.deserialize_data(data.data);
+            }
+            this.setState(ret)
         })
-        .catch(error => {
-            console.log(error);
-          });
+            .catch(error => {
+                console.log(error);
+            });
 
     }
 
@@ -127,12 +133,17 @@ class TableComponent extends Component {
     }
 
     serialize_data(data) {
-
         return data.map((dt) => {
             return {
                 0: dt,
 
             }
+        });
+    }
+
+    deserialize_data(data) {
+        return data.map((dt) => {
+            return dt[0]
         });
     }
 
@@ -159,9 +170,9 @@ class TableComponent extends Component {
         let ret = { columns: columns, data: data }
 
 
-        this.state.document.update({
-            schema: { columns: this.serialize_headers(columns), data: this.serialize_data(data) }
-        });
+        this.state.document.update(
+            { columns: this.serialize_headers(columns), data: this.serialize_data(data) }
+        );
         this.setState(ret);
     }
 
@@ -182,7 +193,7 @@ class TableComponent extends Component {
         let ret = { columns: columns, data: data }
 
         this.state.document.update({
-            schema: { columns: this.serialize_headers(columns), data: this.serialize_data(data) }
+            columns: this.serialize_headers(columns), data: this.serialize_data(data)
         });
 
         this.setState(ret);
@@ -217,7 +228,7 @@ class TableComponent extends Component {
         let ret = { rows: rows, data: data };
 
         this.state.document.update({
-            schema: { rows: this.serialize_headers(rows), data: this.serialize_data(data) }
+            rows: this.serialize_headers(rows), data: this.serialize_data(data)
         });
         this.setState(ret);
     }
@@ -238,7 +249,7 @@ class TableComponent extends Component {
         let ret = { rows: rows, data: data };
 
         this.state.document.update({
-            schema: { rows: this.serialize_headers(rows), data: this.serialize_data(data) }
+            rows: this.serialize_headers(rows), data: this.serialize_data(data)
         });
         this.setState(ret);
 
@@ -265,7 +276,7 @@ class TableComponent extends Component {
         let ret = { data: data };
 
         this.state.document.update({
-            schema: { data: this.serialize_data(data) }
+            data: this.serialize_data(data)
         });
 
         this.setState(ret);
@@ -284,10 +295,10 @@ class TableComponent extends Component {
     }
 
     render() {
-        if(this.state.valid === null){
+        if (this.state.valid === null) {
             return null
-        }else if(this.state.valid === false){
-            return <Redirect to={ROUTES.TABLE}/>
+        } else if (this.state.valid === false) {
+            return <Redirect to={ROUTES.TABLE} />
         }
 
 
