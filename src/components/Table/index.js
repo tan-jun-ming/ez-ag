@@ -1,19 +1,32 @@
 import React, { Component } from 'react';
-import { withRouter } from 'react-router-dom';
+import { withRouter,Redirect } from 'react-router-dom';
 import { compose } from 'recompose';
 import { Parser as FormulaParser } from 'hot-formula-parser';
 import { withFirebase } from '../Firebase';
 import './Tables.scss'
+import * as ROUTES from '../../constants/routes';
 
 class TableComponent extends Component {
     constructor(props) {
         super(props);
+        let document = this.props.firebase.fs.collection("tables").doc(this.props.id);
         this.state = {
-            document: this.props.firebase.fs.collection("tables").doc(this.props.id),
+            document: document,
+            valid: null,
             columns: [],
             rows: [],
             data: [], // columns, rows
         }
+        document.get().then((resp)=>{
+            this.setState({
+                valid: resp.exists
+            })
+            // console.log(resp)
+        })
+        .catch(error => {
+            console.log(error);
+          });
+
     }
 
     _cell_is_formula(value) {
@@ -271,7 +284,13 @@ class TableComponent extends Component {
     }
 
     render() {
-        console.log("render called")
+        if(this.state.valid === null){
+            return null
+        }else if(this.state.valid === false){
+            return <Redirect to={ROUTES.TABLE}/>
+        }
+
+
         let table_data = this.process_spreadsheet();
         let raw_data = this.state.data;
 

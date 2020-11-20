@@ -6,10 +6,11 @@ class TableListComponent extends Component {
 
     render() {
         // Get user's tables here
-
+        
         let ret = [
             <li><Link to={ROUTES.TABLE + "/table1"}>Table 1</Link></li>,
-            <li><Link to={ROUTES.TABLE + "/table2"}>Table 2</Link></li>
+            <li><Link to={ROUTES.TABLE + "/table2"}>Table 2</Link></li>,
+            <li><Link to={ROUTES.TABLE + "/R62xOP9QQLJur8DJraeu"}>Table 3</Link></li>
         ]
         return (
             <ul>
