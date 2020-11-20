@@ -132,10 +132,13 @@ class TableComponent extends Component {
     }
 
     addCol(isStatic) {
+        if (!this.props.edit_mode) {
+            return;
+        }
+
         const columns = this.state.columns.slice();
         let new_col = new TableColumn(isStatic);
 
-        new_col.name = this.get_column_letters(columns.length + 1);
         columns.push(new_col);
 
         const data = this.state.data.map((const_row) => { return const_row.concat(null) });
@@ -150,6 +153,10 @@ class TableComponent extends Component {
     }
 
     delete_col(ind) {
+        if (!this.props.edit_mode) {
+            return;
+        }
+
         const columns = this.state.columns.slice();
 
         columns.splice(ind, 1);
@@ -182,10 +189,13 @@ class TableComponent extends Component {
     }
 
     addRow(isStatic) {
+        if (!this.props.edit_mode) {
+            return;
+        }
+
         const rows = this.state.rows.slice();
         let new_row = new TableRow(isStatic);
 
-        new_row.name = String(rows.length + 1);
         rows.push(new_row);
 
         const data = this.state.data.slice();
@@ -201,6 +211,10 @@ class TableComponent extends Component {
 
 
     delete_row(ind) {
+        if (!this.props.edit_mode) {
+            return;
+        }
+
         const rows = this.state.rows.slice();
 
         rows.splice(ind, 1);
@@ -217,8 +231,17 @@ class TableComponent extends Component {
 
     }
 
+    cell_is_static(x, y) {
+        return this.state.rows[y].isStatic || this.state.columns[x].isStatic;
+    }
 
     setCell(x, y, value) {
+        let is_static = this.cell_is_static(x, y);
+
+        if (this.props.edit_mode ^ is_static) {
+            return;
+        }
+
         if (value === "") {
             value = null;
         }
@@ -229,7 +252,7 @@ class TableComponent extends Component {
         let ret = { data: data };
 
         this.state.document.update({
-            schema: {data: this.serialize_data(data) }
+            schema: { data: this.serialize_data(data) }
         });
 
         this.setState(ret);
@@ -263,6 +286,7 @@ class TableComponent extends Component {
                     < TableHeaderComponent
                         key={`rowheader-${i}`}
                         name={this.state.rows[i].name}
+                        default_name={i + 1}
                         isStatic={this.state.rows[i].isStatic}
                         setvalue={(name) => { this.setHeader(true, i, name) }}
                         delete={() => { this.delete_row(i) }}
@@ -276,6 +300,7 @@ class TableComponent extends Component {
                         <TableHeaderComponent
                             key={`colheader-${u}`}
                             name={this.state.columns[u].name}
+                            default_name={this.get_column_letters(u + 1)}
                             isStatic={this.state.columns[u].isStatic}
                             setvalue={(name) => { this.setHeader(false, u, name) }}
                             delete={() => { this.delete_col(u) }}
@@ -286,6 +311,7 @@ class TableComponent extends Component {
                     new_row.push(
                         <TableCellComponent
                             key={`${i}-${u}`}
+                            edit_mode={!(this.props.edit_mode ^ this.cell_is_static(u, i))}
                             value={table_data[i][u]}
                             raw_value={raw_data[i][u] != null ? raw_data[i][u] : ""}
                             isStatic={this.state.rows[i].isStatic || this.state.columns[u].isStatic}
@@ -299,8 +325,27 @@ class TableComponent extends Component {
                 table_cells.push(<tr key={`row-${i}`}>{new_row}</tr>);
             }
 
+
+
         }
 
+        if (this.props.edit_mode) {
+            column_headers.push(
+                <td key="add_col">
+                    <button className="btn" onClick={() => this.addCol(false)}>+</button>
+                    <button className="btn btn-green" onClick={() => this.addCol(true)}>+</button>
+                </td>
+            );
+            table_cells.push(
+                <tr key="add_row">
+                    <td>
+                        <div className="btn-row">
+                            <button className="btn" onClick={() => this.addRow(false)}>+</button>
+                            <button className="btn btn-green" onClick={() => this.addRow(true)}>+</button>
+                        </div>
+                    </td>
+                </tr>);
+        }
 
         return (
             <div>
@@ -309,27 +354,6 @@ class TableComponent extends Component {
                     <li>Date: {this.props.date}</li>
                     <li>Block: {this.props.block}</li>
                 </ul>
-                <table className="btn-tbl">
-                    <tbody>
-                        <tr>
-                            <td>
-                                <button className="btn" onClick={() => this.addRow(true)}>Add Static Row</button>
-                            </td>
-                            <td>
-                                <button className="btn" onClick={() => this.addRow(false)}>Add Dynamic Row</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <button className="btn" onClick={() => this.addCol(true)}>Add Static Column</button>
-                            </td>
-                            <td>
-                                <button className="btn" onClick={() => this.addCol(false)}>Add Dynamic Column</button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-
                 <table>
                     <tbody>
                         <tr>
@@ -346,12 +370,12 @@ class TableComponent extends Component {
 
 class TableColumn {
     constructor(isStatic) {
-        this.name = "New Column";
+        this.name = null;
         this.isStatic = isStatic;
     }
     serialize() {
         return {
-            name: this.name,
+            name: null,
             isStatic: this.isStatic
         }
     }
@@ -364,7 +388,7 @@ class TableColumn {
 
 class TableRow {
     constructor(isStatic) {
-        this.name = "New Row";
+        this.name = null;
         this.isStatic = isStatic;
     }
     serialize() {
@@ -416,14 +440,17 @@ class TableHeaderComponent extends Component {
 
         return (
 
-            <td className={this.props.isStatic ? "static" : ""} >
+            <th className={this.props.isStatic ? "static" : ""} >
 
-                <button
-                    className="close-button"
-                    onClick={() => { this.props.delete() }}
-                >
-                    X
-                </button>
+                {
+                    !this.props.edit_mode &&
+                    <button
+                        className="close-button"
+                        onClick={() => { this.props.delete() }}
+                    >
+                        X
+                    </button>
+                }
                 { this.state.editing && <input
                     className="table-header"
                     autoFocus
@@ -433,9 +460,9 @@ class TableHeaderComponent extends Component {
                     onKeyDown={this._handleKeyDown}
                 />}
                 { !this.state.editing && <div className="table-header" onClick={() => { this.toggle_edit() }}>
-                    {this.props.name}
+                    {this.props.name || this.props.default_name}
                 </div>}
-            </td>
+            </th>
         );
 
     }
@@ -455,11 +482,13 @@ class TableCellComponent extends Component {
     }
 
     toggle_edit() {
-        console.log("edit toggled")
+        if (this.props.edit_mode) {
+            console.log("edit toggled")
 
-        this.setState({
-            editing: !this.state.editing,
-        });
+            this.setState({
+                editing: !this.state.editing,
+            });
+        }
 
     }
 

@@ -43,7 +43,17 @@ const App = () => (
                         id={match.params.table_id}
                         date={match.params.table_date}
                         block={match.params.table_block}
+                        edit_mode={false}
 
+                    />
+                }
+
+                } />
+            <Route path={ROUTES.TABLEADMIN + "/:table_id"}
+                render={({ match }) => {
+                    return <TablePage
+                        id={match.params.table_id}
+                        edit_mode={true}
                     />
                 }
 
