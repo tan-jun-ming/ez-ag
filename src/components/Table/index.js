@@ -17,6 +17,8 @@ class TableComponent extends Component {
             rows: [],
             data: [], // columns, rows
             dynamic_data: [], // columns, rows (not populated in edit mode)
+            owner: null,
+            users: [],
         }
         document.get().then((resp) => {
             let ret = {
@@ -27,6 +29,11 @@ class TableComponent extends Component {
                 ret.columns = data.columns.map((col) => { return TableColumn.from(col) });
                 ret.rows = data.rows.map((row) => { return TableRow.from(row) });
                 ret.data = this.deserialize_data(data.data);
+                ret.owner = data.owner;
+                ret.users = data.users;
+
+                // TODO: overlay actual data over this
+                ret.dynamic_data = new Array(5).fill(ret.rows.length).map(() => new Array(ret.columns.length).fill(null));
             }
             this.setState(ret)
         })
@@ -42,6 +49,16 @@ class TableComponent extends Component {
 
     process_spreadsheet() {
         let data = JSON.parse(JSON.stringify(this.state.data)); // I hate how theres no good deepcopy in js
+
+        // Flatten data & dynamic data before proceeding
+        for (let x = 0; x < this.state.columns.length; x++) {
+            for (let y = 0; y < this.state.rows.length; y++) {
+                if (!data[y][x]) {
+                    data[y][x] = this.state.dynamic_data[y][x]
+                }
+            }
+        }
+
         for (let x = 0; x < this.state.columns.length; x++) {
             for (let y = 0; y < this.state.rows.length; y++) {
                 if (typeof data[y][x] == "string" && !isNaN(data[y][x]) && !isNaN(parseFloat(data[y][x]))) {
@@ -288,6 +305,7 @@ class TableComponent extends Component {
             // })
         }
 
+        console.log("calling setstate")
         this.setState(ret);
     }
 
@@ -306,7 +324,11 @@ class TableComponent extends Component {
     render() {
         if (this.state.valid === null) {
             return null
-        } else if (this.state.valid === false) {
+        } else if (
+            this.state.valid === false ||
+            (this.props.edit_mode && this.state.owner !== "owner id here") ||
+            ((!this.props.edit_mode) && (!this.state.users.includes("user id here")))
+        ) {
             return <Redirect to={ROUTES.TABLE} />
         }
 
@@ -482,7 +504,7 @@ class TableHeaderComponent extends Component {
             <th className={this.props.isStatic ? "static" : ""} >
 
                 {
-                    !this.props.edit_mode &&
+                    this.props.edit_mode &&
                     <button
                         className="close-button"
                         onClick={() => { this.props.delete() }}
