@@ -16,6 +16,7 @@ class TableComponent extends Component {
             columns: [],
             rows: [],
             data: [], // columns, rows
+            dynamic_data: [], // columns, rows (not populated in edit mode)
         }
         document.get().then((resp) => {
             let ret = {
@@ -266,18 +267,26 @@ class TableComponent extends Component {
             return;
         }
 
+        const data = is_static ? this.state.data.slice() : this.state.dynamic_data.slice();
+
         if (value === "") {
             value = null;
         }
 
-        const data = this.state.data.slice();
         data[y][x] = value;
 
-        let ret = { data: data };
+        let ret = is_static ? { data: data } : { dynamic_data: data };
 
-        this.state.document.update({
-            data: this.serialize_data(data)
-        });
+        if (is_static) {
+            this.state.document.update({
+                data: this.serialize_data(data)
+            });
+        } else {
+            // TODO: Update specific document here
+            // document.update({
+            //     data: this.serialize_data(data)
+            // })
+        }
 
         this.setState(ret);
     }
