@@ -69,7 +69,7 @@ import firebase from "firebase";
         const displayName = user.displayName;
         const email = user.email;
         const uid = user.uid;
-        //console.log(user.uid)
+        console.log(user.uid)
         
         const userref = this.fs.collection('users').doc(uid);
         const doc = await userref.get();

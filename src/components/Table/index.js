@@ -5,6 +5,16 @@ import { Parser as FormulaParser } from 'hot-formula-parser';
 import { withFirebase } from '../Firebase';
 import './Tables.scss'
 import * as ROUTES from '../../constants/routes';
+import { AuthUserContext, withAuthorization } from '../Session';
+
+
+const TableUser = (props) => (
+    <AuthUserContext.Consumer>
+      {authUser => (
+    <TableComponent authUser = {authUser} {...props}/>
+    )}
+    </AuthUserContext.Consumer>
+  );
 
 class TableComponent extends Component {
     constructor(props) {
@@ -12,6 +22,7 @@ class TableComponent extends Component {
         let document = this.props.firebase.fs.collection("tables").doc(this.props.id);
         this.state = {
             document: document,
+            data_document: null,
             valid: null,
             columns: [],
             rows: [],
@@ -19,27 +30,60 @@ class TableComponent extends Component {
             dynamic_data: [], // columns, rows (not populated in edit mode)
             owner: null,
             users: [],
+            current_user: null,
         }
-        document.get().then((resp) => {
-            let ret = {
-                valid: resp.exists
-            }
-            if (ret.valid) {
-                let data = resp.data();
-                ret.columns = data.columns.map((col) => { return TableColumn.from(col) });
-                ret.rows = data.rows.map((row) => { return TableRow.from(row) });
-                ret.data = this.deserialize_data(data.data);
-                ret.owner = data.owner;
-                ret.users = data.users;
+        // TODO: validate the date for the url and the prop block
 
-                // TODO: overlay actual data over this
-                ret.dynamic_data = new Array(5).fill(ret.rows.length).map(() => new Array(ret.columns.length).fill(null));
+        let date = this.props.date;
+        let block = this.props.block;
+        let deserialize_data = this.deserialize_data
+        let setstate = (new_state) => {this.setState(new_state)};
+        this.props.firebase.auth.onAuthStateChanged(
+            (user) => {
+                let data_document_id = `${this.props.id}-${user.uid}-${date}-${block}`;
+                document.get().then((resp) => {
+                    let ret = {
+                        current_user: user,
+                        valid: resp.exists
+                    }
+                    if (ret.valid) {
+                        let data = resp.data();
+                        ret.columns = data.columns.map((col) => { return TableColumn.from(col) });
+                        ret.rows = data.rows.map((row) => { return TableRow.from(row) });
+                        ret.data = deserialize_data(data.data);
+                        ret.owner = data.owner;
+                        ret.users = data.users;
+
+                        // TODO: overlay actual data over this
+                        ret.dynamic_data = new Array(ret.rows.length).fill(null).map(() => new Array(ret.columns.length).fill(null));
+
+                        
+                        console.log(data_document_id)
+                        ret.data_document = this.props.firebase.fs.collection("tabledata").doc(data_document_id);
+                        ret.data_document.get().then((resp2) => {
+                            if (resp2.exists) {
+                                // do the todo
+                                let dyn_data = resp2.data();
+                            } else {
+                                ret.data_document.set({
+                                    data: deserialize_data(ret.dynamic_data)
+                                })
+                            }
+
+                            console.log(resp2)
+                            console.log(ret)
+                            setstate(ret);
+                        })
+                        
+                    }
+
+                })
+                    .catch(error => {
+                        console.log(error);
+                    });
             }
-            this.setState(ret)
-        })
-            .catch(error => {
-                console.log(error);
-            });
+        )
+        
 
     }
 
@@ -322,16 +366,17 @@ class TableComponent extends Component {
     }
 
     render() {
-        if (this.state.valid === null) {
+
+
+        if (this.state.valid === null || !this.state.curr_user) {
             return null
         } else if (
             this.state.valid === false ||
-            (this.props.edit_mode && this.state.owner !== "owner id here") ||
-            ((!this.props.edit_mode) && (!this.state.users.includes("user id here")))
+            (this.props.edit_mode && this.state.owner !== this.state.curr_user.uid) ||
+            ((!this.props.edit_mode) && (!this.state.users.includes(this.state.curr_user.uid)))
         ) {
             return <Redirect to={ROUTES.TABLE} />
         }
-
 
         let table_data = this.process_spreadsheet();
         let raw_data = this.state.data;
@@ -584,7 +629,7 @@ class TableCellComponent extends Component {
 const TablePage = compose(
     withRouter,
     withFirebase,
-)(TableComponent);
+)(TableUser);
 
 // export default TableComponent;
 export default TablePage;
