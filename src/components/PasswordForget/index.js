@@ -51,7 +51,7 @@ class PasswordForgetFormBase extends Component {
  
     return (
       <form onSubmit={this.onSubmit}>
-        <div class = 'container' id = 'forgotform'>
+        <div class = 'container1' id = 'forgotform'>
           <h1>Reset Password</h1>
           <label for = 'email'><b>Email</b></label>
           <input
