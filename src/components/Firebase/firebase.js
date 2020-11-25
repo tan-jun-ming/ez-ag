@@ -77,7 +77,6 @@ import firebase from "firebase";
         if (!doc.exists) {
           this.createUserDocument(uid, email, displayName);
         }
-        
       });
     }
   

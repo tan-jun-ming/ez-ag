@@ -1,0 +1,25 @@
+#header{
+    width: 100%;
+    height: 100px;
+}
+
+#container{
+    width: 300px;
+    margin: auto;
+}
+
+#first{
+    width: auto;
+    float: left;
+    height: 300px;
+}
+
+#second{
+    width: auto;
+    float: right;
+    height: 300px;
+}
+
+#clear{
+    clear: both;
+}
