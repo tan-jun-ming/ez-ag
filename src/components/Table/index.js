@@ -222,7 +222,7 @@ class TableComponent extends Component {
 
     deserialize_data(data) {
         return data.map((dt) => {
-            return dt[0]
+            return dt ? dt[0] : [];
         });
     }
 
@@ -385,10 +385,10 @@ class TableComponent extends Component {
 
 
         if (this.state.valid === null) {
-            return null
+            return null;
         } else if (
             this.state.valid === false) {
-            return <Redirect to={ROUTES.TABLE} />
+            return <Redirect to={this.props.edit_mode ? ROUTES.TABLEADMIN : ROUTES.TABLE} />
         }
 
         let table_data = this.process_spreadsheet();
@@ -469,6 +469,7 @@ class TableComponent extends Component {
         return (
             <div>
                 <ul>
+                    <li>Table Name: {this.state.table_name}</li>
                     <li>Table ID: {this.props.id}</li>
                     <li>Date: {this.props.date}</li>
                     <li>Block: {this.props.block}</li>
