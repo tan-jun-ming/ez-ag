@@ -10,11 +10,11 @@ import { AuthUserContext, withAuthorization } from '../Session';
 
 const TableUser = (props) => (
     <AuthUserContext.Consumer>
-      {authUser => (
-    <TableComponent authUser = {authUser} {...props}/>
-    )}
+        {authUser => (
+            <TableComponent authUser={authUser} {...props} />
+        )}
     </AuthUserContext.Consumer>
-  );
+);
 
 class TableComponent extends Component {
     constructor(props) {
@@ -37,7 +37,8 @@ class TableComponent extends Component {
         let date = this.props.date;
         let block = this.props.block;
         let deserialize_data = this.deserialize_data
-        let setstate = (new_state) => {this.setState(new_state)};
+        let setstate = (new_state) => { this.setState(new_state) };
+
         this.props.firebase.auth.onAuthStateChanged(
             (user) => {
                 let data_document_id = `${this.props.id}-${user.uid}-${date}-${block}`;
@@ -48,33 +49,45 @@ class TableComponent extends Component {
                     }
                     if (ret.valid) {
                         let data = resp.data();
-                        ret.columns = data.columns.map((col) => { return TableColumn.from(col) });
-                        ret.rows = data.rows.map((row) => { return TableRow.from(row) });
-                        ret.data = deserialize_data(data.data);
                         ret.owner = data.owner;
                         ret.users = data.users;
 
-                        // TODO: overlay actual data over this
+                        // Validate if user can view current page
+                        if ((this.props.edit_mode && ret.owner !== user.uid) ||
+                            ((!this.props.edit_mode) && (!ret.users.includes(user.email)))) {
+                            ret.valid = false;
+                            setstate(ret);
+                            return;
+                        }
+
+                        ret.columns = data.columns.map((col) => { return TableColumn.from(col) });
+                        ret.rows = data.rows.map((row) => { return TableRow.from(row) });
+                        ret.data = deserialize_data(data.data);
+
                         ret.dynamic_data = new Array(ret.rows.length).fill(null).map(() => new Array(ret.columns.length).fill(null));
 
-                        
                         console.log(data_document_id)
                         ret.data_document = this.props.firebase.fs.collection("tabledata").doc(data_document_id);
                         ret.data_document.get().then((resp2) => {
                             if (resp2.exists) {
-                                // do the todo
                                 let dyn_data = resp2.data();
+                                for (let y = 0; y < dyn_data.length; y++) {
+                                    for (let x = 0; x < dyn_data[0].length; x++) {
+                                        ret.dynamic_data[y][x] = dyn_data[y][x];
+                                    }
+                                }
                             } else {
                                 ret.data_document.set({
                                     data: deserialize_data(ret.dynamic_data)
                                 })
                             }
-
-                            console.log(resp2)
-                            console.log(ret)
                             setstate(ret);
-                        })
-                        
+                        }).catch(error => {
+                            console.log(error);
+                        });
+
+                    } else {
+                        setstate(ret);
                     }
 
                 })
@@ -83,7 +96,7 @@ class TableComponent extends Component {
                     });
             }
         )
-        
+
 
     }
 
@@ -368,13 +381,10 @@ class TableComponent extends Component {
     render() {
 
 
-        if (this.state.valid === null || !this.state.curr_user) {
+        if (this.state.valid === null) {
             return null
         } else if (
-            this.state.valid === false ||
-            (this.props.edit_mode && this.state.owner !== this.state.curr_user.uid) ||
-            ((!this.props.edit_mode) && (!this.state.users.includes(this.state.curr_user.uid)))
-        ) {
+            this.state.valid === false) {
             return <Redirect to={ROUTES.TABLE} />
         }
 
