@@ -31,6 +31,7 @@ class TableComponent extends Component {
             owner: null,
             users: [],
             current_user: null,
+            table_name: null,
         }
         // TODO: validate the date for the url and the prop block
 
@@ -60,6 +61,7 @@ class TableComponent extends Component {
                             return;
                         }
 
+                        ret.table_name = data.name;
                         ret.columns = data.columns.map((col) => { return TableColumn.from(col) });
                         ret.rows = data.rows.map((row) => { return TableRow.from(row) });
                         ret.data = deserialize_data(data.data);
@@ -70,7 +72,9 @@ class TableComponent extends Component {
                         ret.data_document = this.props.firebase.fs.collection("tabledata").doc(data_document_id);
                         ret.data_document.get().then((resp2) => {
                             if (resp2.exists) {
-                                let dyn_data = resp2.data();
+                                console.log("filling data")
+                                let dyn_data = deserialize_data(resp2.data().data);
+
                                 for (let y = 0; y < dyn_data.length; y++) {
                                     for (let x = 0; x < dyn_data[0].length; x++) {
                                         ret.dynamic_data[y][x] = dyn_data[y][x];
@@ -356,10 +360,9 @@ class TableComponent extends Component {
                 data: this.serialize_data(data)
             });
         } else {
-            // TODO: Update specific document here
-            // document.update({
-            //     data: this.serialize_data(data)
-            // })
+            this.state.data_document.update({
+                data: this.serialize_data(data)
+            })
         }
 
         console.log("calling setstate")

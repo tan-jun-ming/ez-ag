@@ -8,7 +8,7 @@ import './signout.css';
 const SignOutButton = ({ firebase }) => (
     <AuthUserContext.Consumer>
         {authUser => (
-            <button class="button" onClick={firebase.doSignOut}>
+            <button className="button" onClick={firebase.doSignOut}>
                 Sign Out, {authUser.displayName}
             </button>
         )}
