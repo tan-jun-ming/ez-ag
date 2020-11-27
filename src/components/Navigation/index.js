@@ -18,32 +18,32 @@ const Navigation = () => (
 );
 
 const NavigationAuth = () => (
-    <ul>
+    <ul className="navbar">
         {/* <li><Link to={ROUTES.HOME}><img src = {logo} width="20" height="20" /></Link></li> */}
-        <li><Link to={ROUTES.HOME}>Ez-Ag</Link></li>
-        <li><Link to={ROUTES.ACCOUNT}>Account</Link> </li>
-        <li><Link to={ROUTES.TABLE}>Table</Link></li>
-        <li><Link to={ROUTES.ADMIN}>Admin</Link></li>
+        <li className="navbar-item"><Link to={ROUTES.HOME}>Ez-Ag</Link></li>
+        <li className="navbar-item"><Link to={ROUTES.ACCOUNT}>Account</Link> </li>
+        <li className="navbar-item"><Link to={ROUTES.TABLE}>Table</Link></li>
+        <li className="navbar-item"><Link to={ROUTES.ADMIN}>Admin</Link></li>
         <li style={{ float: 'right' }}><SignOutButton /></li>
     </ul>
 
 );
 
 const NavigationAdminAuth = () => (
-    <ul>
+    <ul className="navbar">
         {/* <li><Link to={ROUTES.HOME}><img src = {logo} width="20" height="20" /></Link></li> */}
-        <li><Link to={ROUTES.HOME}>Ez-Ag</Link></li>
-        <li><Link to={ROUTES.ACCOUNT}>Account</Link> </li>
-        <li><Link to={ROUTES.TABLE}>Table</Link></li>
-        <li><Link to={ROUTES.ADMIN}>Admin</Link></li>
+        <li className="navbar-item"><Link to={ROUTES.HOME}>Ez-Ag</Link></li>
+        <li className="navbar-item"><Link to={ROUTES.ACCOUNT}>Account</Link> </li>
+        <li className="navbar-item"><Link to={ROUTES.TABLE}>Table</Link></li>
+        <li className="navbar-item"><Link to={ROUTES.ADMIN}>Admin</Link></li>
         <li style={{ float: 'right' }}><SignOutButton /></li>
     </ul>
 
 );
 
 const NavigationNonAuth = () => (
-    <ul>
-        <li><Link to={ROUTES.LANDING}> Ez-Ag </Link></li>
+    <ul className="navbar">
+        <li className="navbar-item"><Link to={ROUTES.LANDING}> Ez-Ag </Link></li>
         <li style={{ float: 'right' }}><Link to={ROUTES.SIGN_IN}> Sign In</Link></li>
         <li style={{ float: 'right' }}><Link to={ROUTES.SIGN_UP}> Sign Up </Link></li>
     </ul>
