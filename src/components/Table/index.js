@@ -27,7 +27,7 @@ class TableComponent extends Component {
             columns: [],
             rows: [],
             data: [], // columns, rows
-            dynamic_data: [], // columns, rows (not populated in edit mode)
+            dynamic_data: [], // columns, rows (empty in edit mode)
             owner: null,
             users: [],
             current_user: null,
@@ -66,14 +66,11 @@ class TableComponent extends Component {
                         ret.rows = data.rows.map((row) => { return TableRow.from(row) });
                         ret.data = deserialize_data(data.data);
 
-                        ret.dynamic_data = new Array(ret.rows.length).fill(null).map(() => new Array(ret.columns.length).fill(null));
-
                         if (!this.props.edit_mode) {
-                            console.log(data_document_id)
+                            ret.dynamic_data = new Array(ret.rows.length).fill(null).map(() => new Array(ret.columns.length).fill(null));
                             ret.data_document = this.props.firebase.fs.collection("tabledata").doc(data_document_id);
                             ret.data_document.get().then((resp2) => {
                                 if (resp2.exists) {
-                                    console.log("filling data")
                                     let dyn_data = deserialize_data(resp2.data().data);
 
                                     for (let y = 0; y < dyn_data.length; y++) {
@@ -112,18 +109,27 @@ class TableComponent extends Component {
         return value != null && String(value).startsWith("=");
     }
 
-    process_spreadsheet() {
-        let data = JSON.parse(JSON.stringify(this.state.data)); // I hate how theres no good deepcopy in js
+    deepcopy(data) {
+        return JSON.parse(JSON.stringify(data)); // I hate how theres no good deepcopy in js
+    }
 
-        // Flatten data & dynamic data before proceeding
-        if (this.state.edit_mode) {
-            for (let x = 0; x < this.state.columns.length; x++) {
-                for (let y = 0; y < this.state.rows.length; y++) {
-                    if (!data[y][x]) {
-                        data[y][x] = this.state.dynamic_data[y][x]
-                    }
+    flatten_spreadsheets(top, bottom) {
+        for (let x = 0; x < this.state.columns.length; x++) {
+            for (let y = 0; y < this.state.rows.length; y++) {
+                if (top[y][x]) {
+                    bottom[y][x] = top[y][x]
                 }
             }
+        }
+
+        return bottom
+    }
+    process_spreadsheet() {
+        let data = this.deepcopy(this.state.data);
+
+        // Flatten data & dynamic data before proceeding
+        if (!this.props.edit_mode) {
+            data = this.flatten_spreadsheets(this.state.dynamic_data, data);
         }
 
         for (let x = 0; x < this.state.columns.length; x++) {
@@ -142,7 +148,7 @@ class TableComponent extends Component {
     }
 
     resolve_cell(x, y, state, data, formula_check_func, resolve_func) {
-        console.log("resolve cell called", x, y, state)
+        // console.log("resolve cell called", x, y, state)
         let ret = "#REF!";
         if (!state.has(`${x},${y}`)) {
             state.add(`${x},${y}`);
@@ -151,12 +157,12 @@ class TableComponent extends Component {
 
             curr_parser.on("callCellValue", function (cellCoord, done) {
                 try {
-                    console.log(cellCoord)
+                    // console.log(cellCoord)
                     let new_x = cellCoord.column.index;
                     let new_y = cellCoord.row.index;
 
                     let curr_cell = data[new_y][new_x];
-                    console.log(curr_cell);
+                    // console.log(curr_cell);
 
                     if (formula_check_func(curr_cell)) {
                         // console.log("calling resolve cell.....");
@@ -193,7 +199,7 @@ class TableComponent extends Component {
                         ret.push(row_ret);
                     }
 
-                    console.log(ret);
+                    // console.log(ret);
                     done(ret);
                 } catch (error) {
                     console.error(error)
@@ -212,7 +218,7 @@ class TableComponent extends Component {
             }
         }
 
-        console.log(x, y, typeof ret)
+        // console.log(x, y, typeof ret)
         data[y][x] = ret;
 
     }
@@ -347,11 +353,11 @@ class TableComponent extends Component {
     setCell(x, y, value) {
         let is_static = this.cell_is_static(x, y);
 
-        if (this.props.edit_mode ^ is_static) {
+        if (!(this.props.edit_mode || !is_static)) {
             return;
         }
 
-        const data = is_static ? this.state.data.slice() : this.state.dynamic_data.slice();
+        const data = this.props.edit_mode ? this.state.data.slice() : this.state.dynamic_data.slice();
 
         if (value === "") {
             value = null;
@@ -359,9 +365,9 @@ class TableComponent extends Component {
 
         data[y][x] = value;
 
-        let ret = is_static ? { data: data } : { dynamic_data: data };
+        let ret = this.props.edit_mode ? { data: data } : { dynamic_data: data };
 
-        if (is_static) {
+        if (this.props.edit_mode) {
             this.state.document.update({
                 data: this.serialize_data(data)
             });
@@ -371,7 +377,6 @@ class TableComponent extends Component {
             })
         }
 
-        console.log("calling setstate")
         this.setState(ret);
     }
 
@@ -417,7 +422,10 @@ class TableComponent extends Component {
         }
 
         let table_data = this.process_spreadsheet();
-        let raw_data = this.state.data;
+        let raw_data = this.deepcopy(this.state.data);
+        if (!this.props.edit_mode) {
+            raw_data = this.flatten_spreadsheets(this.state.dynamic_data, raw_data);
+        }
 
         let column_headers = [];
         let table_cells = [];
@@ -457,9 +465,9 @@ class TableComponent extends Component {
                     new_row.push(
                         <TableCellComponent
                             key={`${i}-${u}`}
-                            edit_mode={!(this.props.edit_mode ^ this.cell_is_static(u, i))}
+                            edit_mode={this.props.edit_mode}
                             value={table_data[i][u]}
-                            raw_value={raw_data[i][u] != null ? raw_data[i][u] : ""}
+                            raw_value={raw_data[i][u] ? raw_data[i][u] : ""}
                             isStatic={this.state.rows[i].isStatic || this.state.columns[u].isStatic}
                             setvalue={(value) => { this.setCell(u, i, value) }}
                         />
@@ -572,8 +580,6 @@ class TableHeaderComponent extends Component {
     }
 
     toggle_edit() {
-        console.log("edit toggled")
-
         this.setState({
             editing: !this.state.editing,
         });
@@ -614,6 +620,12 @@ class TableHeaderComponent extends Component {
                 { !this.state.editing && <div className="table-header" onClick={() => { this.toggle_edit() }}>
                     {this.props.name || this.props.default_name}
                 </div>}
+                {   this.props.name &&
+                    <div className="default-name">
+                        {this.props.default_name}
+                    </div>
+
+                }
             </th>
         );
 
@@ -625,7 +637,7 @@ class TableCellComponent extends Component {
         super(props, context);
 
         this.state = {
-            curr_value: props.value,
+            curr_value: props.raw_value,
             editing: false,
         };
 
@@ -634,8 +646,7 @@ class TableCellComponent extends Component {
     }
 
     toggle_edit() {
-        if (this.props.edit_mode) {
-            console.log("edit toggled")
+        if (this.props.edit_mode || !this.props.isStatic) {
 
             this.setState({
                 editing: !this.state.editing,
@@ -648,7 +659,7 @@ class TableCellComponent extends Component {
         if (e.key === "Enter") {
             e.currentTarget.blur();
         } else if (e.key === "Escape") {
-            this.state.curr_value = this.props.value;
+            this.state.curr_value = this.props.raw_value;
             e.currentTarget.blur();
         }
     }
@@ -677,7 +688,7 @@ class TableNameComponent extends Component {
         super(props, context);
 
         this.state = {
-            curr_value: props.raw_value,
+            curr_value: props.value,
             editing: false,
         };
 
@@ -687,7 +698,6 @@ class TableNameComponent extends Component {
 
     toggle_edit() {
         if (this.props.edit_mode) {
-            console.log("edit toggled")
 
             this.setState({
                 editing: !this.state.editing,
@@ -700,7 +710,7 @@ class TableNameComponent extends Component {
         if (e.key === "Enter") {
             e.currentTarget.blur();
         } else if (e.key === "Escape") {
-            this.state.curr_value = this.props.raw_value;
+            this.state.curr_value = this.props.value;
             e.currentTarget.blur();
         }
     }
