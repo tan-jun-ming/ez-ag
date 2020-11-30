@@ -369,6 +369,22 @@ class TableComponent extends Component {
         this.setState(ret);
     }
 
+    setname(value) {
+        if (!this.props.edit_mode) {
+            return;
+        }
+
+        if (!value) {
+            value = "Untitled Spreadsheet";
+        }
+
+        this.state.document.update(
+            { name: value }
+        );
+
+        this.setState({ table_name: value });
+    }
+
     setHeader(isRow, index, name) {
         if (name === "") {
             name = null;
@@ -469,7 +485,13 @@ class TableComponent extends Component {
         return (
             <div>
                 <ul>
-                    <li>Table Name: {this.state.table_name}</li>
+                    <li>Table Name: <TableNameComponent
+                        edit_mode={this.props.edit_mode}
+                        value={this.state.table_name}
+                        isStatic={false}
+                        setvalue={(value) => { this.setname(value) }}
+
+                    />  </li>
                     <li>Table ID: {this.props.id}</li>
                     <li>Date: {this.props.date}</li>
                     <li>Block: {this.props.block}</li>
@@ -637,6 +659,52 @@ class TableCellComponent extends Component {
                 </div>}
             </td>
         );
+    }
+}
+
+class TableNameComponent extends Component {
+    constructor(props, context) {
+        super(props, context);
+
+        this.state = {
+            curr_value: props.raw_value,
+            editing: false,
+        };
+
+        this.input = null;
+        this._handleKeyDown = this._handleKeyDown.bind(this);
+    }
+
+    toggle_edit() {
+        if (this.props.edit_mode) {
+            console.log("edit toggled")
+
+            this.setState({
+                editing: !this.state.editing,
+            });
+        }
+
+    }
+
+    _handleKeyDown(e) {
+        if (e.key === "Enter") {
+            e.currentTarget.blur();
+        } else if (e.key === "Escape") {
+            this.state.curr_value = this.props.raw_value;
+            e.currentTarget.blur();
+        }
+    }
+
+    render() {
+        return this.state.editing ? <input
+            autoFocus
+            value={this.state.curr_value}
+            onBlur={(e) => { this.props.setvalue(this.state.curr_value); this.toggle_edit() }}
+            onChange={(e) => { this.setState({ curr_value: e.target.value }) }}
+            onKeyDown={this._handleKeyDown}
+        /> : <div className="name-label" onClick={() => { this.toggle_edit() }}>
+                {this.props.value}
+            </div>
     }
 }
 
