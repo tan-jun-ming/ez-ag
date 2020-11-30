@@ -10,7 +10,9 @@ class TableListComponent extends Component {
 
         this.state = {
             valid: null,
+            table_collection: this.props.firebase.fs.collection("tables"),
             tables: [],
+            tablenames: {},
         }
 
         let setstate = (new_state) => { this.setState(new_state) };
@@ -30,11 +32,32 @@ class TableListComponent extends Component {
                         ret.tables = data[key];
                     } else {
                     }
+
                     setstate(ret);
+
+                    this.state.tables.forEach((key) => {
+                        this.get_table_name(key).then((name) => {
+                            setstate((state) => {
+                                state.tablenames[key] = name;
+                                return state;
+                            })
+                        })
+                    }
+                    )
 
                 })
 
             });
+    }
+
+    async get_table_name(key) {
+        let table = this.state.table_collection.doc(key);
+        let resp = await table.get();
+        if (resp.exists) {
+            return resp.data().name;
+        }
+        return null;
+
     }
 
     render() {
@@ -43,8 +66,8 @@ class TableListComponent extends Component {
         }
         // console.log(this.state)
         let ret = this.state.tables.map(
-            (tablekey, index) => {
-                return <li key={`table-${index}`}><Link to={`${this.props.admin ? ROUTES.TABLEADMIN : ROUTES.TABLE}/${tablekey}`}>Table {index + 1}</Link></li>
+            (table, index) => {
+                return <li key={`table-${index}`}><Link to={`${this.props.admin ? ROUTES.TABLEADMIN : ROUTES.TABLE}/${table}`}>{this.state.tablenames[table] || table}</Link></li>
             }
         )
         return (
