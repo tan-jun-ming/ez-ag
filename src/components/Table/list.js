@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { withRouter, Link } from 'react-router-dom';
+import { withRouter, Link, Redirect } from 'react-router-dom';
 import { compose } from 'recompose';
 import * as ROUTES from '../../constants/routes';
 import { withFirebase } from '../Firebase';
@@ -13,6 +13,8 @@ class TableListComponent extends Component {
             table_collection: this.props.firebase.fs.collection("tables"),
             tables: [],
             tablenames: {},
+            user_id: null,
+            redir_table: null,
         }
 
         let setstate = (new_state) => { this.setState(new_state) };
@@ -26,6 +28,7 @@ class TableListComponent extends Component {
                 doc.get().then((resp) => {
                     let ret = {
                         valid: resp.exists,
+                        user_id: user.uid,
                     }
                     if (ret.valid) {
                         let data = resp.data();
@@ -60,9 +63,39 @@ class TableListComponent extends Component {
 
     }
 
+    new_table() {
+        let new_doc = this.props.firebase.fs.collection("tables").doc();
+        new_doc.set({
+            columns: [],
+            rows: [],
+            data: [],
+            name: "Untitled Spreadsheet",
+            owner: this.state.user_id,
+            users: [],
+        });
+
+        let user_doc = this.props.firebase.fs.collection("users").doc(this.state.user_id);
+        let ret = { redir_table: new_doc.id };
+
+        let setstate = (new_state) => { this.setState(new_state) };
+        // Update user's tables
+        user_doc.get().then((resp) => {
+            let new_ls = resp.data().spreadSheetIDs;
+            new_ls.push(new_doc.id);
+            user_doc.update({
+                spreadSheetIDs: new_ls,
+            });
+            setstate(ret);
+        })
+
+    }
+
     render() {
         if (this.state.valid === null) {
             return null;
+        } else if (
+            this.state.redir_table !== null) {
+            return <Redirect to={`${this.props.admin ? ROUTES.TABLEADMIN : ROUTES.TABLE}/${this.state.redir_table}`} />
         }
         // console.log(this.state)
         let ret = this.state.tables.map(
@@ -73,9 +106,11 @@ class TableListComponent extends Component {
         return (
             <ul>
                 {ret}
-                <li>
-                    <button>Create New Table</button>
-                </li>
+                {this.props.admin &&
+                    <li>
+                        <button onClick={this.new_table.bind(this)}>Create New Table</button>
+                    </li>
+                }
             </ul>
         );
     }
