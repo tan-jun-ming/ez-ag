@@ -68,27 +68,31 @@ class TableComponent extends Component {
 
                         ret.dynamic_data = new Array(ret.rows.length).fill(null).map(() => new Array(ret.columns.length).fill(null));
 
-                        console.log(data_document_id)
-                        ret.data_document = this.props.firebase.fs.collection("tabledata").doc(data_document_id);
-                        ret.data_document.get().then((resp2) => {
-                            if (resp2.exists) {
-                                console.log("filling data")
-                                let dyn_data = deserialize_data(resp2.data().data);
+                        if (!this.props.edit_mode) {
+                            console.log(data_document_id)
+                            ret.data_document = this.props.firebase.fs.collection("tabledata").doc(data_document_id);
+                            ret.data_document.get().then((resp2) => {
+                                if (resp2.exists) {
+                                    console.log("filling data")
+                                    let dyn_data = deserialize_data(resp2.data().data);
 
-                                for (let y = 0; y < dyn_data.length; y++) {
-                                    for (let x = 0; x < dyn_data[0].length; x++) {
-                                        ret.dynamic_data[y][x] = dyn_data[y][x];
+                                    for (let y = 0; y < dyn_data.length; y++) {
+                                        for (let x = 0; x < dyn_data[0].length; x++) {
+                                            ret.dynamic_data[y][x] = dyn_data[y][x];
+                                        }
                                     }
+                                } else {
+                                    ret.data_document.set({
+                                        data: deserialize_data(ret.dynamic_data)
+                                    })
                                 }
-                            } else {
-                                ret.data_document.set({
-                                    data: deserialize_data(ret.dynamic_data)
-                                })
-                            }
+                                setstate(ret);
+                            }).catch(error => {
+                                console.log(error);
+                            });
+                        } else {
                             setstate(ret);
-                        }).catch(error => {
-                            console.log(error);
-                        });
+                        }
 
                     } else {
                         setstate(ret);
@@ -112,10 +116,12 @@ class TableComponent extends Component {
         let data = JSON.parse(JSON.stringify(this.state.data)); // I hate how theres no good deepcopy in js
 
         // Flatten data & dynamic data before proceeding
-        for (let x = 0; x < this.state.columns.length; x++) {
-            for (let y = 0; y < this.state.rows.length; y++) {
-                if (!data[y][x]) {
-                    data[y][x] = this.state.dynamic_data[y][x]
+        if (this.state.edit_mode) {
+            for (let x = 0; x < this.state.columns.length; x++) {
+                for (let y = 0; y < this.state.rows.length; y++) {
+                    if (!data[y][x]) {
+                        data[y][x] = this.state.dynamic_data[y][x]
+                    }
                 }
             }
         }
@@ -393,8 +399,11 @@ class TableComponent extends Component {
         let arr = (isRow ? this.state.rows : this.state.columns).slice();
         arr[index].name = name;
 
-        let new_obj = isRow ? { rows: arr } : { columns: arr }
-        this.setState(new_obj);
+        let serialized_arr = this.serialize_headers(arr);
+        let push_obj = isRow ? { rows: serialized_arr } : { columns: serialized_arr }
+
+        this.state.document.update(push_obj);
+        this.setState(isRow ? { rows: arr } : { columns: arr });
     }
 
     render() {
@@ -420,6 +429,7 @@ class TableComponent extends Component {
                 new_row.push(
                     < TableHeaderComponent
                         key={`rowheader-${i}`}
+                        edit_mode={this.props.edit_mode}
                         name={this.state.rows[i].name}
                         default_name={i + 1}
                         isStatic={this.state.rows[i].isStatic}
@@ -434,6 +444,7 @@ class TableComponent extends Component {
                     column_headers.push(
                         <TableHeaderComponent
                             key={`colheader-${u}`}
+                            edit_mode={this.props.edit_mode}
                             name={this.state.columns[u].name}
                             default_name={this.get_column_letters(u + 1)}
                             isStatic={this.state.columns[u].isStatic}
@@ -517,7 +528,7 @@ class TableColumn {
     }
     serialize() {
         return {
-            name: null,
+            name: this.name,
             isStatic: this.isStatic
         }
     }
@@ -552,7 +563,7 @@ class TableHeaderComponent extends Component {
         super(props, context);
 
         this.state = {
-            curr_value: props.name,
+            curr_value: props.name || "",
             editing: false,
         };
 
@@ -579,7 +590,6 @@ class TableHeaderComponent extends Component {
     }
 
     render() {
-
         return (
 
             <th className={this.props.isStatic ? "static" : ""} >
@@ -615,7 +625,7 @@ class TableCellComponent extends Component {
         super(props, context);
 
         this.state = {
-            curr_value: props.raw_value,
+            curr_value: props.value,
             editing: false,
         };
 
@@ -638,7 +648,7 @@ class TableCellComponent extends Component {
         if (e.key === "Enter") {
             e.currentTarget.blur();
         } else if (e.key === "Escape") {
-            this.state.curr_value = this.props.raw_value;
+            this.state.curr_value = this.props.value;
             e.currentTarget.blur();
         }
     }
