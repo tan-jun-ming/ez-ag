@@ -12,6 +12,11 @@ class TableComponent extends Component {
             columns: [],
             rows: [],
             data: [], // columns, rows
+            // ndate: document.querySelector('input[type="date"]'),
+            // nblock: document.querySelector('input[type="number"]'),
+            ndate: null,
+            nblock: null,
+
         }
     }
 
@@ -215,6 +220,13 @@ class TableComponent extends Component {
         this.setState(new_obj);
     }
 
+    test = () => {
+        const {ndate, nblock} = this.state;
+
+        console.log("ndate:" + ndate);
+        console.log("nblock: " + nblock);
+    }
+
     render() {
         console.log("render called")
         let table_data = this.process_spreadsheet();
@@ -222,6 +234,9 @@ class TableComponent extends Component {
 
         let column_headers = [];
         let table_cells = [];
+
+        const { ndate, nblock } = this.state;
+
 
         for (let i = 0; i < Math.max(this.state.rows.length, 1); i++) {
 
@@ -272,11 +287,16 @@ class TableComponent extends Component {
 
         return (
             <div>
-                <ul>
-                    <li>Table ID: {this.props.id}</li>
-                    <li>Date: {this.props.date}</li>
-                    <li>Block: {this.props.block}</li>
-                </ul>
+                <table style = {{width: '100%'}}>
+                    <tr>
+                        <td style = {{textAlign: "center"}}>Table ID: {this.props.id}</td>
+                        <td style = {{textAlign: "center"}}>Date: {this.props.date}  <br></br>
+                        <input type = 'date' value = {this.state.ndate} onChange =  {this.onChange} onBlur = {(event) => {this.setState({ndate: event.target.value})}}></input></td>
+                        <td style = {{textAlign: "center"}}>Block: {this.props.block} <br></br>
+                        <input size = "4" type = 'number' min = '0' value = {this.state.nblock} onChange = {this.onChange} onBlur = {(event) => {this.setState({nblock: event.target.value})}}></input></td>
+                        <td style = {{textAlign: "center"}}><button onClick = {() => {this.test()}}>Search</button></td>
+                    </tr>
+                    </table>
                 <table className="btn-tbl">
                     <tbody>
                         <tr>

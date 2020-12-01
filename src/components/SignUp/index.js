@@ -72,7 +72,7 @@ class SignUpFormBase extends Component {
     return (
       <form onSubmit={this.onSubmit}>
         <div class = 'container' id = 'signupform'>
-        <h1>Ez-Ag Sign In</h1>
+        <h1>Ez-Ag Sign Up</h1>
         <label for = 'name'><b>Enter Full Name</b></label>
          <input
           name="username"

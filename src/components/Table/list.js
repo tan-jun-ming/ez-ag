@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import * as ROUTES from '../../constants/routes';
 
 class TableListComponent extends Component {
-
     render() {
         // Get user's tables here
 
