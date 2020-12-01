@@ -27,11 +27,9 @@ class TableComponent extends Component {
             columns: [],
             rows: [],
             data: [], // columns, rows
-            // ndate: document.querySelector('input[type="date"]'),
-            // nblock: document.querySelector('input[type="number"]'),
             ndate: null,
             nblock: null,
-
+            redirect: false,
             dynamic_data: [], // columns, rows (not populated in edit mode)
             owner: null,
             users: [],
@@ -386,31 +384,25 @@ class TableComponent extends Component {
         this.setState(new_obj);
     }
 
-    test = () => {
-        const {ndate, nblock} = this.state;
 
-        console.log("ndate:" + ndate);
-        console.log("nblock: " + nblock);
-    }
 
     render() {
 
 
         if (this.state.valid === null) {
             return null;
-        } else if (
-            this.state.valid === false) {
+        } else if (this.state.valid === false) {
             return <Redirect to={this.props.edit_mode ? ROUTES.TABLEADMIN : ROUTES.TABLE} />
+        } else if (this.state.redirect === true) {
+            return <Redirect to={`${this.props.edit_mode ? ROUTES.TABLEADMIN : ROUTES.TABLE}/${this.state.ndate}/${this.state.nblock}`} />
         }
+
 
         let table_data = this.process_spreadsheet();
         let raw_data = this.state.data;
 
         let column_headers = [];
         let table_cells = [];
-
-        const { ndate, nblock } = this.state;
-
 
         for (let i = 0; i < Math.max(this.state.rows.length, 1); i++) {
 
@@ -483,6 +475,7 @@ class TableComponent extends Component {
 
         return (
             <div>
+                { !this.props.edit_mode &&
                 <table style = {{width: '100%'}}>
                     <tr>
                         <td style = {{textAlign: "center"}}>Table ID: {this.props.id}</td>
@@ -490,30 +483,10 @@ class TableComponent extends Component {
                         <input type = 'date' value = {this.state.ndate} onChange =  {this.onChange} onBlur = {(event) => {this.setState({ndate: event.target.value})}}></input></td>
                         <td style = {{textAlign: "center"}}>Block: {this.props.block} <br></br>
                         <input size = "4" type = 'number' min = '0' value = {this.state.nblock} onChange = {this.onChange} onBlur = {(event) => {this.setState({nblock: event.target.value})}}></input></td>
-                        <td style = {{textAlign: "center"}}><button onClick = {() => {this.test()}}>Search</button></td>
+                        <td style = {{textAlign: "center"}}><button onClick = {() => {this.setState({redirect: true})}}>Search</button></td>
                     </tr>
                     </table>
-                <table className="btn-tbl">
-                    <tbody>
-                        <tr>
-                            <td>
-                                <button className="btn" onClick={() => this.addRow(true)}>Add Static Row</button>
-                            </td>
-                            <td>
-                                <button className="btn" onClick={() => this.addRow(false)}>Add Dynamic Row</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <button className="btn" onClick={() => this.addCol(true)}>Add Static Column</button>
-                            </td>
-                            <td>
-                                <button className="btn" onClick={() => this.addCol(false)}>Add Dynamic Column</button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-
+                }
                 <ul>
                     <li>Table Name: {this.state.table_name}</li>
                     <li>Table ID: {this.props.id}</li>
