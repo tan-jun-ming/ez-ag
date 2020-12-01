@@ -36,28 +36,44 @@ const App = () => (
             <Route path={ROUTES.HOME} component={HomePage} />
             <Route path={ROUTES.ACCOUNT} component={AccountPage} />
             <Route path={ROUTES.ADMIN} component={AdminPage} />
-            <Route exact path={ROUTES.TABLE} component={TableListPage} />
+
             <Route path={ROUTES.TABLE + "/:table_id/:table_date/:table_block"}
                 render={({ match }) => {
                     return <TablePage
-                        id={match.params.table_id}
-                        date={match.params.table_date}
-                        block={match.params.table_block}
-
+                    id={match.params.table_id}
+                    date={match.params.table_date}
+                    block={match.params.table_block}
+                    edit_mode={false}
+                    
                     />
                 }
-
-                } />
+                
+            } />
+            <Route path={ROUTES.TABLEADMIN + "/:table_id"}
+                render={({ match }) => {
+                    return <TablePage
+                    id={match.params.table_id}
+                    edit_mode={true}
+                    />
+                }
+                
+            } />
             <Route exact path={ROUTES.TABLE + "/:table_id"}
                 render={({ match }) => (
                     <Redirect to={`${ROUTES.TABLE}/${match.params.table_id}/2020-12-10/1`} />
-                )
+                    )
                 } />
             <Route exact path={ROUTES.TABLE + "/:table_id/:table_date"}
                 render={({ match }) => (
                     <Redirect to={`${ROUTES.TABLE}/${match.params.table_id}/${match.params.table_date}/1`} />
-                )
+                    )
                 } />
+            <Route exact path={ROUTES.TABLEADMIN} render={({match}) =>{
+                return <TableListPage admin = {true} />
+            }} /> 
+            <Route exact path={ROUTES.TABLE} render={({ match }) => {
+                return <TableListPage admin={false} />
+            }} />  
         </div>
     </Router>
 );

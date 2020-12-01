@@ -21,6 +21,10 @@ th, .table-header {
     font-size: 1em;
 }
 
+input.table-header {
+    display:block;
+}
+
 .table-label {
     display: block;
 }
@@ -29,20 +33,42 @@ th, .table-header {
     background-color: #d3fad2;
 }
 
+$btn-size: 2em;
+$btn-margin: .25em;
 
 .btn {
-    width: 13em;
-    margin: 0;
-}
-
-.btn-tbl {
-    margin-bottom: 1em;
-}
-
-.btn-tbl, .btn-tbl th, .btn-tbl td {
+    width: $btn-size;
+    height: $btn-size;
+    margin: $btn-margin;
+    border-radius: 50%;
     border: none;
+    background-color: darkgray;
+}
+
+.btn:hover {
+    cursor: pointer;
+}
+
+.btn-green {
+    background-color: rgb(100, 206, 114);
+}
+
+.btn-row {
+    margin: auto;
+    width: ($btn-size * 2) + $btn-margin;
 }
 
 .tbl-div {
     height: 50%;
+}
+
+.close-button {
+    background: none;
+    border: none;
+    padding: 0;
+    margin-bottom: .6em;
+}
+
+.close-button:hover {
+    cursor: pointer;
 }

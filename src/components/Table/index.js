@@ -1,14 +1,29 @@
 import React, { Component } from 'react';
-import { withRouter } from 'react-router-dom';
+import { withRouter, Redirect } from 'react-router-dom';
 import { compose } from 'recompose';
 import { Parser as FormulaParser } from 'hot-formula-parser';
 import { withFirebase } from '../Firebase';
 import './Tables.scss'
+import * as ROUTES from '../../constants/routes';
+import { AuthUserContext, withAuthorization } from '../Session';
+
+
+const TableUser = (props) => (
+    <AuthUserContext.Consumer>
+        {authUser => (
+            <TableComponent authUser={authUser} {...props} />
+        )}
+    </AuthUserContext.Consumer>
+);
 
 class TableComponent extends Component {
     constructor(props) {
         super(props);
+        let document = this.props.firebase.fs.collection("tables").doc(this.props.id);
         this.state = {
+            document: document,
+            data_document: null,
+            valid: null,
             columns: [],
             rows: [],
             data: [], // columns, rows
@@ -17,7 +32,81 @@ class TableComponent extends Component {
             ndate: null,
             nblock: null,
 
+            dynamic_data: [], // columns, rows (not populated in edit mode)
+            owner: null,
+            users: [],
+            current_user: null,
+            table_name: null,
         }
+        // TODO: validate the date for the url and the prop block
+
+        let date = this.props.date;
+        let block = this.props.block;
+        let deserialize_data = this.deserialize_data
+        let setstate = (new_state) => { this.setState(new_state) };
+
+        this.props.firebase.auth.onAuthStateChanged(
+            (user) => {
+                let data_document_id = `${this.props.id}-${user.uid}-${date}-${block}`;
+                document.get().then((resp) => {
+                    let ret = {
+                        current_user: user,
+                        valid: resp.exists
+                    }
+                    if (ret.valid) {
+                        let data = resp.data();
+                        ret.owner = data.owner;
+                        ret.users = data.users;
+
+                        // Validate if user can view current page
+                        if ((this.props.edit_mode && ret.owner !== user.uid) ||
+                            ((!this.props.edit_mode) && (!ret.users.includes(user.email)))) {
+                            ret.valid = false;
+                            setstate(ret);
+                            return;
+                        }
+
+                        ret.table_name = data.name;
+                        ret.columns = data.columns.map((col) => { return TableColumn.from(col) });
+                        ret.rows = data.rows.map((row) => { return TableRow.from(row) });
+                        ret.data = deserialize_data(data.data);
+
+                        ret.dynamic_data = new Array(ret.rows.length).fill(null).map(() => new Array(ret.columns.length).fill(null));
+
+                        console.log(data_document_id)
+                        ret.data_document = this.props.firebase.fs.collection("tabledata").doc(data_document_id);
+                        ret.data_document.get().then((resp2) => {
+                            if (resp2.exists) {
+                                console.log("filling data")
+                                let dyn_data = deserialize_data(resp2.data().data);
+
+                                for (let y = 0; y < dyn_data.length; y++) {
+                                    for (let x = 0; x < dyn_data[0].length; x++) {
+                                        ret.dynamic_data[y][x] = dyn_data[y][x];
+                                    }
+                                }
+                            } else {
+                                ret.data_document.set({
+                                    data: deserialize_data(ret.dynamic_data)
+                                })
+                            }
+                            setstate(ret);
+                        }).catch(error => {
+                            console.log(error);
+                        });
+
+                    } else {
+                        setstate(ret);
+                    }
+
+                })
+                    .catch(error => {
+                        console.log(error);
+                    });
+            }
+        )
+
+
     }
 
     _cell_is_formula(value) {
@@ -26,6 +115,16 @@ class TableComponent extends Component {
 
     process_spreadsheet() {
         let data = JSON.parse(JSON.stringify(this.state.data)); // I hate how theres no good deepcopy in js
+
+        // Flatten data & dynamic data before proceeding
+        for (let x = 0; x < this.state.columns.length; x++) {
+            for (let y = 0; y < this.state.rows.length; y++) {
+                if (!data[y][x]) {
+                    data[y][x] = this.state.dynamic_data[y][x]
+                }
+            }
+        }
+
         for (let x = 0; x < this.state.columns.length; x++) {
             for (let y = 0; y < this.state.rows.length; y++) {
                 if (typeof data[y][x] == "string" && !isNaN(data[y][x]) && !isNaN(parseFloat(data[y][x]))) {
@@ -117,34 +216,70 @@ class TableComponent extends Component {
 
     }
 
+    serialize_data(data) {
+        return data.map((dt) => {
+            return {
+                0: dt,
+
+            }
+        });
+    }
+
+    deserialize_data(data) {
+        return data.map((dt) => {
+            return dt ? dt[0] : [];
+        });
+    }
+
+    serialize_headers(headers) {
+
+        return headers.map((dt) => {
+            return dt.serialize();
+
+        });
+    }
+
     addCol(isStatic) {
+        if (!this.props.edit_mode) {
+            return;
+        }
+
         const columns = this.state.columns.slice();
         let new_col = new TableColumn(isStatic);
 
-        new_col.name = this.get_column_letters(columns.length + 1);
         columns.push(new_col);
 
         const data = this.state.data.map((const_row) => { return const_row.concat(null) });
 
         let ret = { columns: columns, data: data }
 
-        // this.props.firebase.db.ref("/table").update(ret);
+
+        this.state.document.update(
+            { columns: this.serialize_headers(columns), data: this.serialize_data(data) }
+        );
         this.setState(ret);
     }
 
     delete_col(ind) {
-        const cols = this.state.columns.slice();
+        if (!this.props.edit_mode) {
+            return;
+        }
 
-        cols.splice(ind, 1);
+        const columns = this.state.columns.slice();
+
+        columns.splice(ind, 1);
 
         const data = this.state.data.slice();
         for (let i = 0; i < data.length; i++) {
             data[i].splice(ind, 1);
         }
 
-        let ret = { columns: cols, data: data }
+        let ret = { columns: columns, data: data }
 
-        // this.props.firebase.db.ref("/table").update(ret);
+        this.state.document.update({
+            columns: this.serialize_headers(columns), data: this.serialize_data(data)
+        });
+
         this.setState(ret);
 
     }
@@ -162,10 +297,13 @@ class TableComponent extends Component {
     }
 
     addRow(isStatic) {
+        if (!this.props.edit_mode) {
+            return;
+        }
+
         const rows = this.state.rows.slice();
         let new_row = new TableRow(isStatic);
 
-        new_row.name = String(rows.length + 1);
         rows.push(new_row);
 
         const data = this.state.data.slice();
@@ -173,12 +311,18 @@ class TableComponent extends Component {
 
         let ret = { rows: rows, data: data };
 
-        // this.props.firebase.db.ref("/table").update(ret);
+        this.state.document.update({
+            rows: this.serialize_headers(rows), data: this.serialize_data(data)
+        });
         this.setState(ret);
     }
 
 
     delete_row(ind) {
+        if (!this.props.edit_mode) {
+            return;
+        }
+
         const rows = this.state.rows.slice();
 
         rows.splice(ind, 1);
@@ -188,23 +332,45 @@ class TableComponent extends Component {
 
         let ret = { rows: rows, data: data };
 
-        // this.props.firebase.db.ref("/table").update(ret);
+        this.state.document.update({
+            rows: this.serialize_headers(rows), data: this.serialize_data(data)
+        });
         this.setState(ret);
 
     }
 
+    cell_is_static(x, y) {
+        return this.state.rows[y].isStatic || this.state.columns[x].isStatic;
+    }
 
     setCell(x, y, value) {
+        let is_static = this.cell_is_static(x, y);
+
+        if (this.props.edit_mode ^ is_static) {
+            return;
+        }
+
+        const data = is_static ? this.state.data.slice() : this.state.dynamic_data.slice();
+
         if (value === "") {
             value = null;
         }
 
-        const data = this.state.data.slice();
         data[y][x] = value;
 
-        let ret = { data: data };
+        let ret = is_static ? { data: data } : { dynamic_data: data };
 
-        // this.props.firebase.db.ref("/table").update(ret);
+        if (is_static) {
+            this.state.document.update({
+                data: this.serialize_data(data)
+            });
+        } else {
+            this.state.data_document.update({
+                data: this.serialize_data(data)
+            })
+        }
+
+        console.log("calling setstate")
         this.setState(ret);
     }
 
@@ -228,7 +394,15 @@ class TableComponent extends Component {
     }
 
     render() {
-        console.log("render called")
+
+
+        if (this.state.valid === null) {
+            return null;
+        } else if (
+            this.state.valid === false) {
+            return <Redirect to={this.props.edit_mode ? ROUTES.TABLEADMIN : ROUTES.TABLE} />
+        }
+
         let table_data = this.process_spreadsheet();
         let raw_data = this.state.data;
 
@@ -246,6 +420,7 @@ class TableComponent extends Component {
                     < TableHeaderComponent
                         key={`rowheader-${i}`}
                         name={this.state.rows[i].name}
+                        default_name={i + 1}
                         isStatic={this.state.rows[i].isStatic}
                         setvalue={(name) => { this.setHeader(true, i, name) }}
                         delete={() => { this.delete_row(i) }}
@@ -259,6 +434,7 @@ class TableComponent extends Component {
                         <TableHeaderComponent
                             key={`colheader-${u}`}
                             name={this.state.columns[u].name}
+                            default_name={this.get_column_letters(u + 1)}
                             isStatic={this.state.columns[u].isStatic}
                             setvalue={(name) => { this.setHeader(false, u, name) }}
                             delete={() => { this.delete_col(u) }}
@@ -269,6 +445,7 @@ class TableComponent extends Component {
                     new_row.push(
                         <TableCellComponent
                             key={`${i}-${u}`}
+                            edit_mode={!(this.props.edit_mode ^ this.cell_is_static(u, i))}
                             value={table_data[i][u]}
                             raw_value={raw_data[i][u] != null ? raw_data[i][u] : ""}
                             isStatic={this.state.rows[i].isStatic || this.state.columns[u].isStatic}
@@ -282,8 +459,27 @@ class TableComponent extends Component {
                 table_cells.push(<tr key={`row-${i}`}>{new_row}</tr>);
             }
 
+
+
         }
 
+        if (this.props.edit_mode) {
+            column_headers.push(
+                <td key="add_col">
+                    <button className="btn" onClick={() => this.addCol(false)}>+</button>
+                    <button className="btn btn-green" onClick={() => this.addCol(true)}>+</button>
+                </td>
+            );
+            table_cells.push(
+                <tr key="add_row">
+                    <td>
+                        <div className="btn-row">
+                            <button className="btn" onClick={() => this.addRow(false)}>+</button>
+                            <button className="btn btn-green" onClick={() => this.addRow(true)}>+</button>
+                        </div>
+                    </td>
+                </tr>);
+        }
 
         return (
             <div>
@@ -318,6 +514,12 @@ class TableComponent extends Component {
                     </tbody>
                 </table>
 
+                <ul>
+                    <li>Table Name: {this.state.table_name}</li>
+                    <li>Table ID: {this.props.id}</li>
+                    <li>Date: {this.props.date}</li>
+                    <li>Block: {this.props.block}</li>
+                </ul>
                 <table>
                     <tbody>
                         <tr>
@@ -334,18 +536,40 @@ class TableComponent extends Component {
 
 class TableColumn {
     constructor(isStatic) {
-        this.name = "New Column";
+        this.name = null;
         this.isStatic = isStatic;
     }
+    serialize() {
+        return {
+            name: null,
+            isStatic: this.isStatic
+        }
+    }
+    static from(json) {
+        return Object.assign(new TableColumn(), json);
+    }
+
 }
 
 
 class TableRow {
     constructor(isStatic) {
-        this.name = "New Row";
+        this.name = null;
         this.isStatic = isStatic;
     }
+    serialize() {
+        return {
+            name: this.name,
+            isStatic: this.isStatic
+        }
+    }
+    static from(json) {
+        return Object.assign(new TableRow(), json);
+    }
+
+
 }
+
 
 class TableHeaderComponent extends Component {
     constructor(props, context) {
@@ -382,14 +606,17 @@ class TableHeaderComponent extends Component {
 
         return (
 
-            <td className={this.props.isStatic ? "static" : ""} >
+            <th className={this.props.isStatic ? "static" : ""} >
 
-                <button
-                    className="close-button"
-                    onClick={() => { this.props.delete() }}
-                >
-                    X
-                </button>
+                {
+                    this.props.edit_mode &&
+                    <button
+                        className="close-button"
+                        onClick={() => { this.props.delete() }}
+                    >
+                        X
+                    </button>
+                }
                 { this.state.editing && <input
                     className="table-header"
                     autoFocus
@@ -399,9 +626,9 @@ class TableHeaderComponent extends Component {
                     onKeyDown={this._handleKeyDown}
                 />}
                 { !this.state.editing && <div className="table-header" onClick={() => { this.toggle_edit() }}>
-                    {this.props.name}
+                    {this.props.name || this.props.default_name}
                 </div>}
-            </td>
+            </th>
         );
 
     }
@@ -421,11 +648,13 @@ class TableCellComponent extends Component {
     }
 
     toggle_edit() {
-        console.log("edit toggled")
+        if (this.props.edit_mode) {
+            console.log("edit toggled")
 
-        this.setState({
-            editing: !this.state.editing,
-        });
+            this.setState({
+                editing: !this.state.editing,
+            });
+        }
 
     }
 
@@ -460,7 +689,7 @@ class TableCellComponent extends Component {
 const TablePage = compose(
     withRouter,
     withFirebase,
-)(TableComponent);
+)(TableUser);
 
 // export default TableComponent;
 export default TablePage;
