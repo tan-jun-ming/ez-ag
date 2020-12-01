@@ -74,7 +74,7 @@ class SignInFormBase extends Component {
         <form onSubmit={this.onSubmit}>
 
           <div class = 'container' id ="signinform">
-          <h1>Ez-Ag Login In</h1>
+          <h1>Ez-Ag Login</h1>
             <label for = 'email'><b>Email</b></label>
             <br></br>
             <input name="email" 

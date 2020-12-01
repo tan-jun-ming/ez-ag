@@ -27,6 +27,9 @@ class TableComponent extends Component {
             columns: [],
             rows: [],
             data: [], // columns, rows
+            ndate: null,
+            nblock: null,
+            redirect: false,
             dynamic_data: [], // columns, rows (empty in edit mode)
             owner: null,
             users: [],
@@ -411,15 +414,19 @@ class TableComponent extends Component {
         this.setState(isRow ? { rows: arr } : { columns: arr });
     }
 
+
+
     render() {
 
 
         if (this.state.valid === null) {
             return null;
-        } else if (
-            this.state.valid === false) {
+        } else if (this.state.valid === false) {
             return <Redirect to={this.props.edit_mode ? ROUTES.TABLEADMIN : ROUTES.TABLE} />
+        } else if (this.state.redirect === true) {
+            return <Redirect to={`${this.props.edit_mode ? ROUTES.TABLEADMIN : ROUTES.TABLE}/${this.state.ndate}/${this.state.nblock}`} />
         }
+
 
         let table_data = this.process_spreadsheet();
         let raw_data = this.deepcopy(this.state.data);
@@ -503,6 +510,18 @@ class TableComponent extends Component {
 
         return (
             <div>
+                { !this.props.edit_mode &&
+                    <table style={{ width: '100%' }}>
+                        <tr>
+                            <td style={{ textAlign: "center" }}>Table ID: {this.props.id}</td>
+                            <td style={{ textAlign: "center" }}>Date: {this.props.date}  <br></br>
+                                <input type='date' value={this.state.ndate} onChange={this.onChange} onBlur={(event) => { this.setState({ ndate: event.target.value }) }}></input></td>
+                            <td style={{ textAlign: "center" }}>Block: {this.props.block} <br></br>
+                                <input size="4" type='number' min='0' value={this.state.nblock} onChange={this.onChange} onBlur={(event) => { this.setState({ nblock: event.target.value }) }}></input></td>
+                            <td style={{ textAlign: "center" }}><button onClick={() => { this.setState({ redirect: true }) }}>Search</button></td>
+                        </tr>
+                    </table>
+                }
                 <ul>
                     <li>Table Name: <TableNameComponent
                         edit_mode={this.props.edit_mode}
