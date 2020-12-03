@@ -27,8 +27,8 @@ class TableComponent extends Component {
             columns: [],
             rows: [],
             data: [], // columns, rows
-            ndate: null,
-            nblock: null,
+            ndate: this.props.date,
+            nblock: this.props.block,
             redirect: false,
             dynamic_data: [], // columns, rows (empty in edit mode)
             owner: null,
@@ -424,7 +424,7 @@ class TableComponent extends Component {
         } else if (this.state.valid === false) {
             return <Redirect to={this.props.edit_mode ? ROUTES.TABLEADMIN : ROUTES.TABLE} />
         } else if (this.state.redirect === true) {
-            return <Redirect to={`${this.props.edit_mode ? ROUTES.TABLEADMIN : ROUTES.TABLE}/${this.state.ndate}/${this.state.nblock}`} />
+            return <Redirect to={`${this.props.edit_mode ? ROUTES.TABLEADMIN : ROUTES.TABLE}/${this.props.id}/${this.state.ndate}/${this.state.nblock}`} />
         }
 
 
@@ -515,10 +515,10 @@ class TableComponent extends Component {
                         <tr>
                             <td style={{ textAlign: "center" }}>Table ID: {this.props.id}</td>
                             <td style={{ textAlign: "center" }}>Date: {this.props.date}  <br></br>
-                                <input type='date' value={this.state.ndate} onChange={this.onChange} onBlur={(event) => { this.setState({ ndate: event.target.value }) }}></input></td>
+                                <input type='date' value={this.state.ndate} onChange={(event) => { this.setState({ ndate: event.target.value }) }}></input></td>
                             <td style={{ textAlign: "center" }}>Block: {this.props.block} <br></br>
-                                <input size="4" type='number' min='0' value={this.state.nblock} onChange={this.onChange} onBlur={(event) => { this.setState({ nblock: event.target.value }) }}></input></td>
-                            <td style={{ textAlign: "center" }}><button onClick={() => { this.setState({ redirect: true }) }}>Search</button></td>
+                                <input size="4" type='number' min='0' value={this.state.nblock} onChange={(event) => { this.setState({ nblock: event.target.value }) }}></input></td>
+                            <td style={{ textAlign: "center" }}><button onClick={() => { this.setState({ redirect: true }) }}>Go</button></td>
                         </tr>
                     </table>
                 }
