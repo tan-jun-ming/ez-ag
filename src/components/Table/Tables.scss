@@ -2,11 +2,12 @@ table {
     border-collapse: collapse;
 }
 
-table, th, td {
-    border: 1px solid lightgrey;
+table.data-table {
+    border: 1px solid lightgrey;   
 }
 
-th, td {
+table.data-table > tbody > tr > th, table.data-table > tbody > tr > td {
+    border: 1px solid lightgrey;
     height: 3em;
 }
 
@@ -80,4 +81,13 @@ $btn-margin: .25em;
 .default-name {
     color: grey;
     font-weight: normal;
+}
+
+.info-table > tbody > tr > th {
+    text-align: right;
+}
+
+.info-table {
+    margin-top: 2em;
+    margin-bottom: 2em;
 }

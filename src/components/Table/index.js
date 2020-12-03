@@ -510,31 +510,53 @@ class TableComponent extends Component {
 
         return (
             <div>
-                { !this.props.edit_mode &&
-                    <table style={{ width: '100%' }}>
+                <table className="info-table">
+                    <tbody>
                         <tr>
-                            <td style={{ textAlign: "center" }}>Table ID: {this.props.id}</td>
-                            <td style={{ textAlign: "center" }}>Date: {this.props.date}  <br></br>
-                                <input type='date' value={this.state.ndate} onChange={(event) => { this.setState({ ndate: event.target.value }) }}></input></td>
-                            <td style={{ textAlign: "center" }}>Block: {this.props.block} <br></br>
-                                <input size="4" type='number' min='0' value={this.state.nblock} onChange={(event) => { this.setState({ nblock: event.target.value }) }}></input></td>
-                            <td style={{ textAlign: "center" }}><button onClick={() => { this.setState({ redirect: true }) }}>Go</button></td>
-                        </tr>
-                    </table>
-                }
-                <ul>
-                    <li>Table Name: <TableNameComponent
-                        edit_mode={this.props.edit_mode}
-                        value={this.state.table_name}
-                        isStatic={false}
-                        setvalue={(value) => { this.setname(value) }}
+                            <th>Table Name</th>
+                            <td><TableNameComponent
+                                edit_mode={this.props.edit_mode}
+                                value={this.state.table_name}
+                                isStatic={false}
+                                setvalue={(value) => { this.setname(value) }}
 
-                    />  </li>
-                    <li>Table ID: {this.props.id}</li>
-                    <li>Date: {this.props.date}</li>
-                    <li>Block: {this.props.block}</li>
-                </ul>
-                <table>
+                            /></td>
+                        </tr>
+                        {
+                            !this.props.edit_mode &&
+                            <tr>
+                                <th>
+                                    Date
+                                </th>
+                                <td>
+                                    <input type='date' value={this.state.ndate} onChange={(event) => { this.setState({ ndate: event.target.value }) }}></input>
+                                </td>
+                            </tr>
+                        }
+                        {
+                            !this.props.edit_mode &&
+                            <tr>
+                                <th>
+                                    Block
+                                </th>
+                                <td>
+                                    <input size="4" type='number' min='0' value={this.state.nblock} onChange={(event) => { this.setState({ nblock: event.target.value }) }}></input>
+                                </td>
+                            </tr>
+                        }
+                        {
+                            !this.props.edit_mode &&
+                            <tr>
+                                <th>
+                                </th>
+                                <td>
+                                    <button onClick={() => { this.setState({ redirect: true }) }}>Go</button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+                <table className="data-table">
                     <tbody>
                         <tr>
                             <th className="tbl-corner"></th>
