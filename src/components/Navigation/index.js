@@ -23,7 +23,7 @@ const NavigationAuth = () => (
         <li className="navbar-item"><Link to={ROUTES.HOME}>Ez-Ag</Link></li>
         <li className="navbar-item"><Link to={ROUTES.ACCOUNT}>Account</Link> </li>
         <li className="navbar-item"><Link to={ROUTES.TABLE}>Table</Link></li>
-        <li className="navbar-item"><Link to={ROUTES.ADMIN}>Admin</Link></li>
+        <li className="navbar-item"><Link to={ROUTES.TABLEADMIN}>Admin</Link></li>
         <li style={{ float: 'right' }}><SignOutButton /></li>
     </ul>
 
@@ -35,7 +35,7 @@ const NavigationAdminAuth = () => (
         <li className="navbar-item"><Link to={ROUTES.HOME}>Ez-Ag</Link></li>
         <li className="navbar-item"><Link to={ROUTES.ACCOUNT}>Account</Link> </li>
         <li className="navbar-item"><Link to={ROUTES.TABLE}>Table</Link></li>
-        <li className="navbar-item"><Link to={ROUTES.ADMIN}>Admin</Link></li>
+        <li className="navbar-item"><Link to={ROUTES.TABLEADMIN}>Admin</Link></li>
         <li style={{ float: 'right' }}><SignOutButton /></li>
     </ul>
 
