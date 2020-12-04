@@ -44,8 +44,8 @@ const NavigationAdminAuth = () => (
 const NavigationNonAuth = () => (
     <ul className="navbar">
         <li className="navbar-item"><Link to={ROUTES.LANDING}> Ez-Ag </Link></li>
-        <li style={{ float: 'right' }}><Link to={ROUTES.SIGN_IN}> Sign In</Link></li>
-        <li style={{ float: 'right' }}><Link to={ROUTES.SIGN_UP}> Sign Up </Link></li>
+        <li className="navbar-item" style={{ float: 'right' }}><Link to={ROUTES.SIGN_IN}> Sign In</Link></li>
+        <li className="navbar-item"style={{ float: 'right' }}><Link to={ROUTES.SIGN_UP}> Sign Up </Link></li>
     </ul>
 );
 
