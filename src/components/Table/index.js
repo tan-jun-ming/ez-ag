@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { withRouter, Redirect } from 'react-router-dom';
+import { withRouter, Redirect, Link } from 'react-router-dom';
 import { compose } from 'recompose';
 import { Parser as FormulaParser } from 'hot-formula-parser';
 import { withFirebase } from '../Firebase';
@@ -7,19 +7,24 @@ import './Tables.scss'
 import * as ROUTES from '../../constants/routes';
 import { AuthUserContext, withAuthorization } from '../Session';
 
+const TableUser = (props) => {
+    return <TableUserComponent
+        edit_mode={false}
+    />
 
-const TableUser = (props) => (
-    <AuthUserContext.Consumer>
-        {authUser => (
-            <TableComponent authUser={authUser} {...props} />
-        )}
-    </AuthUserContext.Consumer>
-);
+}
+
+const TableAdmin = (props) => {
+    return <TableAdminComponent
+        edit_mode={true}
+    />
+}
 
 class TableComponent extends Component {
     constructor(props) {
         super(props);
-        let document = this.props.firebase.fs.collection("tables").doc(this.props.id);
+
+        let document = this.props.firebase.fs.collection("tables").doc(this.props.match.params.table_id);
         this.state = {
             document: document,
             data_document: null,
@@ -27,9 +32,8 @@ class TableComponent extends Component {
             columns: [],
             rows: [],
             data: [], // columns, rows
-            ndate: this.props.date,
-            nblock: this.props.block,
-            redirect: false,
+            ndate: this.props.match.params.table_date,
+            nblock: this.props.match.params.table_block,
             dynamic_data: [], // columns, rows (empty in edit mode)
             owner: null,
             users: [],
@@ -38,14 +42,15 @@ class TableComponent extends Component {
         }
         // TODO: validate the date for the url and the prop block
 
-        let date = this.props.date;
-        let block = this.props.block;
+        let id = this.props.match.params.table_id;
+        let date = this.props.match.params.table_date;
+        let block = this.props.match.params.table_block;
         let deserialize_data = this.deserialize_data
         let setstate = (new_state) => { this.setState(new_state) };
 
         this.props.firebase.auth.onAuthStateChanged(
             (user) => {
-                let data_document_id = `${this.props.id}-${user.uid}-${date}-${block}`;
+                let data_document_id = `${id}-${user.uid}-${date}-${block}`;
                 document.get().then((resp) => {
                     let ret = {
                         current_user: user,
@@ -423,10 +428,7 @@ class TableComponent extends Component {
             return null;
         } else if (this.state.valid === false) {
             return <Redirect to={this.props.edit_mode ? ROUTES.TABLEADMIN : ROUTES.TABLE} />
-        } else if (this.state.redirect === true) {
-            return <Redirect to={`${this.props.edit_mode ? ROUTES.TABLEADMIN : ROUTES.TABLE}/${this.props.id}/${this.state.ndate}/${this.state.nblock}`} />
         }
-
 
         let table_data = this.process_spreadsheet();
         let raw_data = this.deepcopy(this.state.data);
@@ -529,7 +531,7 @@ class TableComponent extends Component {
                                     Date
                                 </th>
                                 <td>
-                                    <input type='date' value={this.state.ndate} onChange={(event) => { this.setState({ ndate: event.target.value }) }}></input>
+                                    <input type='date' value={this.state.ndate} onChange={(event) => { this.setState({ ndate: event.target.value ? event.target.value : this.props.match.params.table_date }) }}></input>
                                 </td>
                             </tr>
                         }
@@ -550,7 +552,9 @@ class TableComponent extends Component {
                                 <th>
                                 </th>
                                 <td>
-                                    <button onClick={() => { this.setState({ redirect: true }) }}>Go</button>
+                                    <Link to={`${this.props.edit_mode ? ROUTES.TABLEADMIN : ROUTES.TABLE}/${this.props.match.params.table_id}/${this.state.ndate}/${this.state.nblock}`}>
+                                        <button>Go</button>
+                                    </Link>
                                 </td>
                             </tr>
                         }
@@ -769,10 +773,15 @@ class TableNameComponent extends Component {
     }
 }
 
-const TablePage = compose(
+const TableUserComponent = compose(
     withRouter,
     withFirebase,
-)(TableUser);
+)(TableComponent);
+
+const TableAdminComponent = compose(
+    withRouter,
+    withFirebase,
+)(TableComponent);
 
 // export default TableComponent;
-export default TablePage;
+export { TableUser, TableAdmin };
