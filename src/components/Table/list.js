@@ -12,7 +12,6 @@ class TableListComponent extends Component {
             valid: null,
             table_collection: this.props.firebase.fs.collection("tables"),
             tables: [],
-            tablenames: {},
             user_id: null,
             redir_table: null,
         }
@@ -22,45 +21,30 @@ class TableListComponent extends Component {
 
         this.props.firebase.auth.onAuthStateChanged(
             (user) => {
-                let doc = is_admin ? this.props.firebase.fs.collection("users").doc(user.uid) : this.props.firebase.fs.collection("emails").doc(user.email);
-                let key = is_admin ? "spreadSheetIDs" : "tables";
+                let db = this.props.firebase.fs.collection("tables")
 
-                doc.get().then((resp) => {
+                if (is_admin) {
+                    db = db.where("owner", "==", user.uid);
+                } else {
+                    db = db.where("users", "array-contains", user.email);
+                }
+
+                db.get().then((resp) => {
                     let ret = {
-                        valid: resp.exists,
+                        valid: true,
                         user_id: user.uid,
+                        tables: [],
                     }
-                    if (ret.valid) {
-                        let data = resp.data();
-                        ret.tables = data[key];
-                    } else {
-                    }
+                    resp.forEach((doc) => {
+                        ret.tables.push([doc.id, doc.data().name]);
 
+                    })
                     setstate(ret);
-
-                    this.state.tables.forEach((key) => {
-                        this.get_table_name(key).then((name) => {
-                            setstate((state) => {
-                                state.tablenames[key] = name;
-                                return state;
-                            })
-                        })
-                    }
-                    )
-
                 })
 
+
+
             });
-    }
-
-    async get_table_name(key) {
-        let table = this.state.table_collection.doc(key);
-        let resp = await table.get();
-        if (resp.exists) {
-            return resp.data().name;
-        }
-        return null;
-
     }
 
     new_table() {
@@ -100,7 +84,7 @@ class TableListComponent extends Component {
         // console.log(this.state)
         let ret = this.state.tables.map(
             (table, index) => {
-                return <li key={`table-${index}`}><Link to={`${this.props.admin ? ROUTES.TABLEADMIN : ROUTES.TABLE}/${table}`}>{this.state.tablenames[table] || table}</Link></li>
+                return <li key={`table-${index}`}><Link to={`${this.props.admin ? ROUTES.TABLEADMIN : ROUTES.TABLE}/${table[0]}`}>{table[1]}</Link></li>
             }
         )
         return (
