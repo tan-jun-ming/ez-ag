@@ -58,19 +58,9 @@ class TableListComponent extends Component {
             users: [],
         });
 
-        let user_doc = this.props.firebase.fs.collection("users").doc(this.state.user_id);
         let ret = { redir_table: new_doc.id };
 
-        let setstate = (new_state) => { this.setState(new_state) };
-        // Update user's tables
-        user_doc.get().then((resp) => {
-            let new_ls = resp.data().spreadSheetIDs;
-            new_ls.push(new_doc.id);
-            user_doc.update({
-                spreadSheetIDs: new_ls,
-            });
-            setstate(ret);
-        })
+        this.setState(ret)
 
     }
 

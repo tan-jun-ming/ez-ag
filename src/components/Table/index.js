@@ -5,7 +5,10 @@ import { Parser as FormulaParser } from 'hot-formula-parser';
 import { withFirebase } from '../Firebase';
 import './Tables.scss'
 import * as ROUTES from '../../constants/routes';
+import ReactModal from 'react-modal';
 import { AuthUserContext, withAuthorization } from '../Session';
+import TableUsersList from './users';
+
 
 const TableUser = (props) => {
     return <TableUserComponent
@@ -28,17 +31,23 @@ class TableComponent extends Component {
         this.state = {
             document: document,
             data_document: null,
+
             valid: null,
+
             columns: [],
             rows: [],
             data: [], // columns, rows
+            dynamic_data: [], // columns, rows (empty in edit mode)
+
             ndate: this.props.match.params.table_date,
             nblock: this.props.match.params.table_block,
-            dynamic_data: [], // columns, rows (empty in edit mode)
+
             owner: null,
             users: [],
+
             current_user: null,
             table_name: null,
+            userlist_open: false,
         }
         // TODO: validate the date for the url and the prop block
 
@@ -512,6 +521,26 @@ class TableComponent extends Component {
 
         return (
             <div>
+                {this.props.edit_mode &&
+                    <ReactModal
+                        isOpen={this.state.userlist_open}
+                        style={{
+                            overlay: {
+                                top: "20%",
+                                left: "25%",
+                                right: "25%",
+                                bottom: "20%",
+                            }
+                        }}
+                    >
+                        <TableUsersList
+                            users={this.state.users}
+                            doc={this.state.document}
+                            closemodal={() => { this.setState({ userlist_open: false }) }}
+
+                        ></TableUsersList>
+                    </ReactModal>
+                }
                 <table className="info-table">
                     <tbody>
                         <tr>
@@ -524,6 +553,14 @@ class TableComponent extends Component {
 
                             /></td>
                         </tr>
+                        {
+                            this.props.edit_mode &&
+                            <tr>
+                                <th>
+                                    <button onClick={() => { this.setState({ userlist_open: true }) }}>Edit Users</button>
+                                </th>
+                            </tr>
+                        }
                         {
                             !this.props.edit_mode &&
                             <tr>
