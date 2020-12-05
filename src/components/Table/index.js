@@ -1,18 +1,20 @@
 import React, { Component } from 'react';
 import { withRouter, Redirect, Link } from 'react-router-dom';
 import { compose } from 'recompose';
+import uuid from 'react-uuid'
+import ReactModal from 'react-modal';
 import { Parser as FormulaParser } from 'hot-formula-parser';
 import { withFirebase } from '../Firebase';
 import './Tables.scss'
-import * as ROUTES from '../../constants/routes';
-import ReactModal from 'react-modal';
-import { AuthUserContext, withAuthorization } from '../Session';
 import TableUsersList from './users';
+import * as ROUTES from '../../constants/routes';
+import { AuthUserContext, withAuthorization } from '../Session';
 
 
 const TableUser = (props) => {
     return <TableUserComponent
         edit_mode={false}
+        key={uuid()}
     />
 
 }
@@ -20,6 +22,7 @@ const TableUser = (props) => {
 const TableAdmin = (props) => {
     return <TableAdminComponent
         edit_mode={true}
+        key={uuid()}
     />
 }
 
