@@ -3,7 +3,7 @@ import { withRouter, Redirect } from 'react-router-dom';
 import { compose } from 'recompose';
 import { Parser as FormulaParser } from 'hot-formula-parser';
 import { withFirebase } from '../Firebase';
-//import './Tables.scss'
+import './Tables.scss'
 import * as ROUTES from '../../constants/routes';
 import { AuthUserContext, withAuthorization } from '../Session';
 
