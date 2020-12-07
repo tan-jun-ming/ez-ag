@@ -18,6 +18,7 @@ class TableListComponent extends Component {
 
         let setstate = (new_state) => { this.setState(new_state) };
         let is_admin = this.props.admin;
+        console.log(is_admin);
 
         this.props.firebase.auth.onAuthStateChanged(
             (user) => {

@@ -20,7 +20,7 @@ const Navigation = () => (
 const NavigationAuth = () => (
     <ul className="navbar">
         {/* <li><Link to={ROUTES.HOME}><img src = {logo} width="20" height="20" /></Link></li> */}
-        <li className="navbar-item"><Link to={ROUTES.HOME}>Ez-Ag</Link></li>
+        <li className="navbar-item"><Link to={ROUTES.LANDING}>Ez-Ag</Link></li>
         <li className="navbar-item"><Link to={ROUTES.ACCOUNT}>Account</Link> </li>
         <li className="navbar-item"><Link to={ROUTES.TABLE}>Table</Link></li>
         <li className="navbar-item"><Link to={ROUTES.TABLEADMIN}>Admin</Link></li>
