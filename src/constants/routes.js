@@ -6,3 +6,4 @@ export const ACCOUNT = '/account';
 export const PASSWORD_FORGET = '/pw-forget';
 export const TABLE = '/table';
 export const TABLEADMIN = '/tableadmin';
+export const TABLEVIEW = '/tableview';

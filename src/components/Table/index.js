@@ -12,16 +12,26 @@ import { AuthUserContext, withAuthorization } from '../Session';
 
 
 const TableUser = (props) => {
-    return <TableUserComponent
+    return <TableComposedComponent
         edit_mode={false}
+        view_mode={false}
         key={uuid()}
     />
 
 }
 
 const TableAdmin = (props) => {
-    return <TableAdminComponent
+    return <TableComposedComponent
         edit_mode={true}
+        view_mode={false}
+        key={uuid()}
+    />
+}
+
+const TableView = (props) => {
+    return <TableComposedComponent
+        edit_mode={false}
+        view_mode={true}
         key={uuid()}
     />
 }
@@ -57,12 +67,14 @@ class TableComponent extends Component {
         let id = this.props.match.params.table_id;
         let date = this.props.match.params.table_date;
         let block = this.props.match.params.table_block;
+        let targetuser = this.props.match.params.target_user;
+        let view_mode = this.props.view_mode;
         let deserialize_data = this.deserialize_data
         let setstate = (new_state) => { this.setState(new_state) };
 
         this.props.firebase.auth.onAuthStateChanged(
             (user) => {
-                let data_document_id = `${id}-${user.uid}-${date}-${block}`;
+                let data_document_id = `${id}-${view_mode ? targetuser : user.uid}-${date}-${block}`;
                 document.get().then((resp) => {
                     let ret = {
                         current_user: user,
@@ -74,7 +86,7 @@ class TableComponent extends Component {
                         ret.users = data.users;
 
                         // Validate if user can view current page
-                        if ((this.props.edit_mode && ret.owner !== user.uid) ||
+                        if (((this.props.edit_mode || view_mode) && ret.owner !== user.uid) ||
                             ((!this.props.edit_mode) && (!ret.users.includes(user.email)))) {
                             ret.valid = false;
                             setstate(ret);
@@ -99,9 +111,19 @@ class TableComponent extends Component {
                                         }
                                     }
                                 } else {
-                                    ret.data_document.set({
-                                        data: deserialize_data(ret.dynamic_data)
-                                    })
+                                    if (!view_mode) {
+                                        ret.data_document.set({
+                                            data: deserialize_data(ret.dynamic_data),
+                                            table: id,
+                                            date: date,
+                                            block: block,
+                                            user: user.uid,
+                                            email: user.email,
+                                            last_updated: 0,
+                                        })
+                                    } else {
+                                        ret.valid = false;
+                                    }
                                 }
                                 setstate(ret);
                             }).catch(error => {
@@ -267,7 +289,7 @@ class TableComponent extends Component {
     }
 
     addCol(isStatic) {
-        if (!this.props.edit_mode) {
+        if ((!this.props.edit_mode) || this.props.view_mode) {
             return;
         }
 
@@ -288,7 +310,8 @@ class TableComponent extends Component {
     }
 
     delete_col(ind) {
-        if (!this.props.edit_mode) {
+        // Warning: Deleting columns/rows will mess up individual user's table data so maybe fix that at some point
+        if ((!this.props.edit_mode) || this.props.view_mode) {
             return;
         }
 
@@ -324,7 +347,7 @@ class TableComponent extends Component {
     }
 
     addRow(isStatic) {
-        if (!this.props.edit_mode) {
+        if ((!this.props.edit_mode) || this.props.view_mode) {
             return;
         }
 
@@ -346,7 +369,8 @@ class TableComponent extends Component {
 
 
     delete_row(ind) {
-        if (!this.props.edit_mode) {
+        // Warning: Deleting columns/rows will mess up individual user's table data so maybe fix that at some point
+        if ((!this.props.edit_mode) || this.props.view_mode) {
             return;
         }
 
@@ -373,7 +397,7 @@ class TableComponent extends Component {
     setCell(x, y, value) {
         let is_static = this.cell_is_static(x, y);
 
-        if (!(this.props.edit_mode || !is_static)) {
+        if ((!(this.props.edit_mode || !is_static)) || this.props.view_mode) {
             return;
         }
 
@@ -393,7 +417,8 @@ class TableComponent extends Component {
             });
         } else {
             this.state.data_document.update({
-                data: this.serialize_data(data)
+                data: this.serialize_data(data),
+                last_updated: Date.now(),
             })
         }
 
@@ -401,7 +426,7 @@ class TableComponent extends Component {
     }
 
     setname(value) {
-        if (!this.props.edit_mode) {
+        if ((!this.props.edit_mode) || this.props.view_mode) {
             return;
         }
 
@@ -417,6 +442,10 @@ class TableComponent extends Component {
     }
 
     setHeader(isRow, index, name) {
+        if ((!this.props.edit_mode) || this.props.view_mode) {
+            return;
+        }
+
         if (name === "") {
             name = null;
         }
@@ -459,6 +488,7 @@ class TableComponent extends Component {
                     < TableHeaderComponent
                         key={`rowheader-${i}`}
                         edit_mode={this.props.edit_mode}
+                        view_mode={this.props.view_mode}
                         name={this.state.rows[i].name}
                         default_name={i + 1}
                         isStatic={this.state.rows[i].isStatic}
@@ -474,6 +504,7 @@ class TableComponent extends Component {
                         <TableHeaderComponent
                             key={`colheader-${u}`}
                             edit_mode={this.props.edit_mode}
+                            view_mode={this.props.view_mode}
                             name={this.state.columns[u].name}
                             default_name={this.get_column_letters(u + 1)}
                             isStatic={this.state.columns[u].isStatic}
@@ -487,6 +518,7 @@ class TableComponent extends Component {
                         <TableCellComponent
                             key={`${i}-${u}`}
                             edit_mode={this.props.edit_mode}
+                            view_mode={this.props.view_mode}
                             value={table_data[i][u]}
                             raw_value={raw_data[i][u] ? raw_data[i][u] : ""}
                             isStatic={this.state.rows[i].isStatic || this.state.columns[u].isStatic}
@@ -565,13 +597,24 @@ class TableComponent extends Component {
                             </tr>
                         }
                         {
+                            this.props.view_mode &&
+                            <tr>
+                                <th>
+                                    User ID
+                                </th>
+                                <td>
+                                    {this.props.match.params.target_user}
+                                </td>
+                            </tr>
+                        }
+                        {
                             !this.props.edit_mode &&
                             <tr>
                                 <th>
                                     Date
                                 </th>
                                 <td>
-                                    <input type='date' value={this.state.ndate} onChange={(event) => { this.setState({ ndate: event.target.value ? event.target.value : this.props.match.params.table_date }) }}></input>
+                                    {this.props.view_mode ? this.props.match.params.table_date : <input type='date' value={this.state.ndate} onChange={(event) => { this.setState({ ndate: event.target.value ? event.target.value : this.props.match.params.table_date }) }}></input>}
                                 </td>
                             </tr>
                         }
@@ -582,7 +625,7 @@ class TableComponent extends Component {
                                     Block
                                 </th>
                                 <td>
-                                    <input size="4" type='number' min='0' value={this.state.nblock} onChange={(event) => { this.setState({ nblock: event.target.value }) }}></input>
+                                    {this.props.view_mode ? this.props.match.params.table_block : <input size="4" type='number' min='0' value={this.state.nblock} onChange={(event) => { this.setState({ nblock: event.target.value }) }}></input>}
                                 </td>
                             </tr>
                         }
@@ -731,7 +774,7 @@ class TableCellComponent extends Component {
     }
 
     toggle_edit() {
-        if (this.props.edit_mode || !this.props.isStatic) {
+        if (!this.props.view_mode && (this.props.edit_mode || !this.props.isStatic)) {
 
             this.setState({
                 editing: !this.state.editing,
@@ -813,15 +856,10 @@ class TableNameComponent extends Component {
     }
 }
 
-const TableUserComponent = compose(
-    withRouter,
-    withFirebase,
-)(TableComponent);
-
-const TableAdminComponent = compose(
+const TableComposedComponent = compose(
     withRouter,
     withFirebase,
 )(TableComponent);
 
 // export default TableComponent;
-export { TableUser, TableAdmin };
+export { TableUser, TableAdmin, TableView };

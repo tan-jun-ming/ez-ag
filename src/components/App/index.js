@@ -9,8 +9,9 @@ import SignInPage from '../SignIn';
 import PasswordForgetPage from '../PasswordForget';
 import HomePage from '../Home';
 import AccountPage from '../Account';
-import { TableUser, TableAdmin } from '../Table';
+import { TableUser, TableAdmin, TableView } from '../Table';
 import TableListPage from '../Table/list';
+import TableUpdates from '../Table/updates';
 
 
 import { withAuthentication } from '../Session';
@@ -39,13 +40,20 @@ const App = () => (
 
                 <Route path={ROUTES.TABLE + "/:table_id/:table_date/:table_block"} component={TableUser} />
 
+                <Route exact path={ROUTES.TABLEVIEW} component={TableUpdates} />
+
+                <Route path={ROUTES.TABLEVIEW + "/:table_id/:target_user/:table_date/:table_block"} component={TableView} />
+
                 <Route path={ROUTES.TABLEADMIN + "/:table_id"} component={TableAdmin} />
 
                 <Route exact path={ROUTES.TABLE + "/:table_id"}
-                    render={({ match }) => (
-                        <Redirect to={`${ROUTES.TABLE}/${match.params.table_id}/2020-12-10/1`} />
-                    )
-                    } />
+                    render={({ match }) => {
+                        // Adapted from https://stackoverflow.com/a/50130338
+                        let date = new Date();
+                        let datestr = new Date(date - (date.getTimezoneOffset() * 60000)).toISOString().split("T")[0];
+
+                        return <Redirect to={`${ROUTES.TABLE}/${match.params.table_id}/${datestr}/1`} />
+                    }} />
                 <Route exact path={ROUTES.TABLE + "/:table_id/:table_date"}
                     render={({ match }) => (
                         <Redirect to={`${ROUTES.TABLE}/${match.params.table_id}/${match.params.table_date}/1`} />

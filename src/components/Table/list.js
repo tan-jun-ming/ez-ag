@@ -22,7 +22,7 @@ class TableListComponent extends Component {
 
         this.props.firebase.auth.onAuthStateChanged(
             (user) => {
-                let db = this.props.firebase.fs.collection("tables")
+                let db = this.state.table_collection;
 
                 if (is_admin) {
                     db = db.where("owner", "==", user.uid);
