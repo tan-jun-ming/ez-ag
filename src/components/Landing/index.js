@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Link, withRouter } from 'react-router-dom';
+import { withRouter } from 'react-router-dom';
 import { withFirebase } from '../Firebase';
 import { compose } from 'recompose';
 
@@ -8,50 +8,21 @@ import mock from './img/ez_ag_mockup.png';
 import mock2 from './img/ez_ag_mockup_2.png'
 import mock3 from './img/ez_ag_mockup_3.png'
 
-import './landing.css';
+import './style/landing.css';
 
-import { AuthUserContext, withAuthorization } from '../Session';
-import { auth } from 'firebase';
-import { fireEvent } from '@testing-library/react';
-
-// const LandingUser = (props) => (
-//   <AuthUserContext.Consumer>
-//     {authUser => (
-//       authUser ? <LandingAuths authUser = {authUser} {...props}/> : <LandingNonAuth/>
-//     )}
-//   </AuthUserContext.Consumer>
-// )
+import { AuthUserContext } from '../Session';
+import LandingPageAuth from './LandingAuths';
 
 const Landing = () => (
   <div>
     <AuthUserContext.Consumer>
       {authUser =>
-        authUser ? <LandingAuths authUser = {authUser}/> : <LandingNonAuth/>
+        authUser ? <LandingPageAuth/> : <LandingNonAuth/>
       }
     </AuthUserContext.Consumer>
   </div>
 );
 
-class LandingAuths extends Component {
-  constructor(props){
-    super(props);
-
-    this.state = {
-      curr_user: null,
-      isAdmin: false,
-    }
-  }
-
-  render(){
-    return(
-      <div>
-        <div id = 'announcements'>
-          <h1>Announcements</h1>
-        </div>
-      </div>
-    );
-  }
-}
 
 const LandingNonAuth = () => (
   <div>
@@ -136,15 +107,5 @@ const LandingNonAuth = () => (
   </div>
 )
 
-const INITIAL_STATE = {
-  c_user: null,
-  isAdmin: false,
-}
-
-
-const LandingPage = compose(
-  withRouter,
-  withFirebase,
-)(Landing);
  
 export default Landing;
