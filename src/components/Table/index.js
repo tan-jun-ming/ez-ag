@@ -76,6 +76,10 @@ class TableComponent extends Component {
 
         this.props.firebase.auth.onAuthStateChanged(
             (user) => {
+                if (user === null) {
+                    setstate({ valid: false });
+                    return;
+                }
                 let data_document_id = `${id}-${view_mode ? targetuser : user.uid}-${date}-${block}`;
                 document.get().then((resp) => {
                     let ret = {

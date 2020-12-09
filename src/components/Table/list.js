@@ -22,6 +22,11 @@ class TableListComponent extends Component {
 
         this.props.firebase.auth.onAuthStateChanged(
             (user) => {
+                if (user === null) {
+                    setstate({ valid: false });
+                    return;
+                }
+
                 let db = this.state.table_collection;
 
                 if (is_admin) {
@@ -68,6 +73,8 @@ class TableListComponent extends Component {
     render() {
         if (this.state.valid === null) {
             return null;
+        } else if (this.state.valid === false) {
+            return <Redirect to={`${this.props.admin ? ROUTES.TABLEADMIN : ROUTES.TABLE}`} />;
         } else if (
             this.state.redir_table !== null) {
             return <Redirect to={`${this.props.admin ? ROUTES.TABLEADMIN : ROUTES.TABLE}/${this.state.redir_table}`} />
