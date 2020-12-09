@@ -28,7 +28,7 @@ input[type=text], input[type=password] {
   width: 100%;
 }
 
-#signin:valid{
+#signup:valid{
     background-color: #4CAF50;
 }
 

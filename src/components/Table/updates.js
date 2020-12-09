@@ -109,20 +109,16 @@ class TableUpdatesComponent extends Component {
 const TableInstance = (props) => {
     return (
         <Link to={`${ROUTES.TABLEVIEW}/${props.table}/${props.user}/${props.date}/${props.block}`}>
-            <ul>
-                <li>
+            <div className = 'card'>
+                <h3>
                     {props.table_name}
-                </li>
-                <li>
-                    {props.date} Block {props.block}
-                </li>
-                <li>
-                    Last Updated {strftime("%B %d, %Y %H:%M:%S", new Date(props.last_updated))}
-                </li>
-                <li>
+                </h3>
+                <p>
+                    {props.date} Block {props.block} <br/>
+                    Last Updated {strftime("%B %d, %Y %H:%M:%S", new Date(props.last_updated))} <br/>
                     by {props.email}
-                </li>
-            </ul>
+                </p>
+            </div>
         </Link>
     )
 }

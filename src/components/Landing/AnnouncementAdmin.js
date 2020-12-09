@@ -76,57 +76,6 @@ class AnnouncementsListA extends Component {
         db.collection("announcements ").doc(announcement.key).delete();
         console.log('annoucement deleted');
     }
-
-    editAlert = (announcement) => {
-        const {title = announcement.title, message = announcement.text } = this.state;
-        confirmAlert({
-            customUI: ({ onClose }) => {
-              return (
-                <div className='custom-ui'>
-                    <h1>Edit {announcement.title}</h1>
-                    <label for = 'title'><b>Title</b></label>
-                    <br/>
-                    <input name = 'title' classname = 'title'
-                    defaultValue = {title}
-                    type = 'text'
-                    onChange = {this.onChange}/>
-
-                    <br/>
-                    <label for = 'text'><b>Message</b></label>
-                    <br/>
-                    <textarea name = 'text' className = "message"
-                    defaultValue = {message}
-                    type = 'text'
-                    style = {{width: '100%', height: '200px'}}
-                    onChange = {this.onChange}/>
-
-                    <button onClick={onClose}
-                    style = {{float: "right"}}> Cancel </button>
-
-                    <button
-                    style = {{float: "left"}}
-                    onClick={() => {this.editAnnouncement(announcement.key, title, message, announcement);onClose();}}> Update </button>
-                </div>
-              );
-            }
-          });
-    }
-
-    editAnnouncement = (id, title, message, announcement) => {
-
-        if(title === announcement.title && message === announcement.text){
-            console.log('they are the same, no update is needed');
-            console.log(id);
-            console.log(title);
-            console.log(message);
-            return;
-        }else{
-            console.log(id);
-            console.log(title);
-            console.log(message);
-        }
-    }
-
   
     render() {
         const { announcements, loading } = this.state;
