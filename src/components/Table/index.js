@@ -70,6 +70,8 @@ class TableComponent extends Component {
         let targetuser = this.props.match.params.target_user;
         let view_mode = this.props.view_mode;
         let deserialize_data = this.deserialize_data
+
+        console.log(this.props.view_mode);
         let setstate = (new_state) => { this.setState(new_state) };
 
         this.props.firebase.auth.onAuthStateChanged(
@@ -87,7 +89,7 @@ class TableComponent extends Component {
 
                         // Validate if user can view current page
                         if (((this.props.edit_mode || view_mode) && ret.owner !== user.uid) ||
-                            ((!this.props.edit_mode) && (!ret.users.includes(user.email)))) {
+                            ((!(this.props.edit_mode || view_mode)) && (!ret.users.includes(user.email)))) {
                             ret.valid = false;
                             setstate(ret);
                             return;
