@@ -37,33 +37,36 @@ class TableUpdatesComponent extends Component {
                             tablenames[doc.id] = doc.data().name;
                         })
 
-                        this.state.tabledata_collection.where("table", "in", tables).get().then((resp3) => {
-                            ret.tabledata_insts = [];
-                            resp3.forEach((doc) => {
-                                let data = doc.data();
-                                if (data.last_updated != 0) { // Somehow can't query this
-                                    ret.tabledata_insts.push(
-                                        {
-                                            last_updated: data.last_updated,
-                                            table_name: tablenames[data.table],
-                                            email: data.email,
-                                            table: data.table,
-                                            user: data.user,
-                                            date: data.date,
-                                            block: data.block
-                                        });
-                                }
+                        if (tables.length > 0) {
+                            this.state.tabledata_collection.where("table", "in", tables).get().then((resp3) => {
+                                ret.tabledata_insts = [];
+                                resp3.forEach((doc) => {
+                                    let data = doc.data();
+                                    if (data.last_updated != 0) { // Somehow can't query this
+                                        ret.tabledata_insts.push(
+                                            {
+                                                last_updated: data.last_updated,
+                                                table_name: tablenames[data.table],
+                                                email: data.email,
+                                                table: data.table,
+                                                user: data.user,
+                                                date: data.date,
+                                                block: data.block
+                                            });
+                                    }
+                                })
+
+                                ret.tabledata_insts.sort((a, b) => {
+                                    if (a.last_updated < b.last_updated) return 1;
+                                    if (a.last_updated > b.last_updated) return -1;
+                                    return 0;
+                                });
+
+                                setstate(ret);
                             })
-
-                            ret.tabledata_insts.sort((a, b) => {
-                                if (a.last_updated < b.last_updated) return 1;
-                                if (a.last_updated > b.last_updated) return -1;
-                                return 0;
-                            });
-
+                        } else {
                             setstate(ret);
                         }
-                        )
 
                     }
                     )
