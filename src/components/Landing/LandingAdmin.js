@@ -61,6 +61,8 @@ class LandingAdmin extends Component {
       title: title,
       text: text,
       userid: firebase.auth().currentUser.uid
+    }).then(() => {
+      window.location.reload();
     });
 
     this.setState({

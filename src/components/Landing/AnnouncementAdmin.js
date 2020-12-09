@@ -73,7 +73,10 @@ class AnnouncementsListA extends Component {
         console.log(announcement.key);
         const db = firebase.firestore();
 
-        db.collection("announcements ").doc(announcement.key).delete();
+        db.collection("announcements ").doc(announcement.key).delete()
+            .then(() => {
+                window.location.reload();
+            });
         console.log('annoucement deleted');
     }
   
