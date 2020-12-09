@@ -28,9 +28,6 @@ class AnnouncementsList extends Component {
                 let temp = [];
                 snap.forEach(doc => {
                     temp.push({...doc.data(), key: doc.id });
-                    console.log(temp);
-                    console.log(doc.data());
-                    console.log(doc.id);
                 });
 
                 this.setState({
@@ -46,11 +43,10 @@ class AnnouncementsList extends Component {
 
         return (
             <div>
-                <h1>Announcements</h1>
                 <div div class = "e1">
                 {announcements.map(announcement => (
                     <div>
-                        <div class="card"> 
+                        <div class="card" id = {announcement.key}> 
                             <h3>{announcement.title}</h3>
                             <p>{announcement.text}</p>
                         </div>
@@ -60,8 +56,7 @@ class AnnouncementsList extends Component {
             </div>
         );
     }
-}
-  
+} 
   
 const AnnouncementsPage = compose(
     withRouter,

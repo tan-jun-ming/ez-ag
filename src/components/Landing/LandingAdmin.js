@@ -5,10 +5,11 @@ import { compose } from 'recompose';
 import  firebase  from 'firebase';
 
 import './style/landing.css';
-import AnnouncementsPage from './Announcements';
+import AnnouncementsPageA from './AnnouncementAdmin';
 import UserPage from './UserList';
 
 import Collapsible from 'react-collapsible';
+import Modal from 'react-bootstrap';
 
 class LandingAdmin extends Component {
   constructor(props){
@@ -44,7 +45,6 @@ class LandingAdmin extends Component {
   }
 
   onSubmit = event => {
-
     const { title, text } = this.state;
 
     const data = {
@@ -55,20 +55,18 @@ class LandingAdmin extends Component {
 
     console.log(data);
 
-    this.props.firebase.fs
-      .colllection("announcements ").add(data)
-      .then(function(docRef){
-        console.log("announcement created: ", docRef.id);
-      })
-      .catch(function(error){
-        console.log("Error adding document: " , error);
-      });
+    const db = firebase.firestore();
 
-    // this.prop.firebase.fs
-    //   .collection("announcements ").push(data)
-    //   .then(function(){
-    //     console.log("announcement created");
-    //   });
+    db.collection("announcements ").add({
+      title: title,
+      text: text,
+      userid: firebase.auth().currentUser.uid
+    });
+
+    this.setState({
+      title: ' ',
+      text: ' '
+    });
 
     event.preventDefault();
   };
@@ -111,11 +109,18 @@ class LandingAdmin extends Component {
           </form>
         </div>
         </Collapsible>
-        <AnnouncementsPage/>
+        <ul className = "navbar2">
+          <h1>
+          Announcements
+          {/* <button style={{ float: 'right' }}>Edit Announcement</button>
+          <button style={{ float: 'right' }}>Delete Announcement</button> */}
+          </h1>
+        </ul>
+        <AnnouncementsPageA/>
 
         <br/>
 
-        <Collapsible trigger = "Users">
+        <Collapsible trigger = "Manage Users">
           <UserPage/>
         </Collapsible>
       </div>
