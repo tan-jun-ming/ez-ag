@@ -50,6 +50,7 @@ class LandingAuths extends Component {
 
 const LandingUser = () => (
   <div>
+    <h1>Announcements</h1>
     <AnnouncementsPage/>
   </div>
 )

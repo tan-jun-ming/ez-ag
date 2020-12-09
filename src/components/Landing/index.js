@@ -12,12 +12,13 @@ import './style/landing.css';
 
 import { AuthUserContext } from '../Session';
 import LandingPageAuth from './LandingAuths';
+import SigninPage from '../SignIn/index'
 
 const Landing = () => (
   <div>
     <AuthUserContext.Consumer>
       {authUser =>
-        authUser ? <LandingPageAuth/> : <LandingNonAuth/>
+        authUser ? <LandingPageAuth/> : <SigninPage/>
       }
     </AuthUserContext.Consumer>
   </div>

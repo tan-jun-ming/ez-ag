@@ -4,7 +4,9 @@ import { withFirebase } from '../Firebase';
 import { compose } from 'recompose';
 import  firebase  from 'firebase';
 
-import './style/announcement.css';
+import user_logo from './img/user_logo.png';
+
+import './style/user.css';
 
 class UserList extends Component {
     constructor(props){
@@ -28,16 +30,15 @@ class UserList extends Component {
               .then(snap => {
                   let temp = [];
                   snap.forEach(doc => {
-                      temp.push({...doc.data(), key: doc.id });
-                      console.log(temp);
-                      console.log(doc.data());
-                      console.log(doc.id);
+                      temp.push({...doc.data(), uid: doc.id });
                   });
   
                   this.setState({
                       users: temp,
                       loading: false,
                   });
+
+                  console.log('User data is grabbed');
               });
       }
 
@@ -46,14 +47,13 @@ class UserList extends Component {
 
         return (
             <div>
+                <br/>
                 <div div class = "e1">
                 {users.map(user => (
-                    <div>
-                        <div class="card"> 
-                            <h3>{user.fullName}</h3>
-                            <p> {user.email}</p>
-                            <p>User is an admin: </p>{user.isAdmin ? <div>true</div> : <div>false</div>}
-                        </div>
+                    <div className = "chip">
+                        <img src = {user_logo} alt = {user.fullName} width = "96" height = "96"/>
+                        {user.fullName}
+                        <input type = 'checkbox' className = 'switch' id = {user.uid}/>
                     </div>
                 ))}
                 </div>
