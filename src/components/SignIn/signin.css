@@ -1,12 +1,11 @@
 body {font-family: Arial, Helvetica, sans-serif;}
-form {border: 3px solid #f1f1f1;}
 
 #signinform{
-    padding: 16%;
+    padding: 8%;
 }
 
 .container{
-    padding: 16%;
+    padding: 5%;
 }
 
 #gbttn{

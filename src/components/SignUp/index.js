@@ -8,11 +8,9 @@ import * as ROUTES from '../../constants/routes';
 import './signup.css';
 
 const SignUpPage = () => (
-  <div>
-    <div class = 'container'>
+    <div>
       <SignUpForm />
     </div>
-  </div>
 );
 
 const INITIAL_STATE = {
@@ -70,8 +68,7 @@ class SignUpFormBase extends Component {
       username === '';
 
     return (
-      <form onSubmit={this.onSubmit}>
-        <div class = 'container' id = 'signupform'>
+      <form className = 'container' onSubmit={this.onSubmit}>
         <h1>Ez-Ag Sign Up</h1>
         <label for = 'name'><b>Enter Full Name</b></label>
          <input
@@ -105,12 +102,11 @@ class SignUpFormBase extends Component {
           type="password"
           placeholder="Confirm Password"
         />
+
+        {error && <p style = {{color: 'red'}}>{error.message}</p>}
         <button id = 'signup' disabled={isInvalid} type="submit">
           Sign Up
-        </button>
-        </div>
- 
-        {error && <p>{error.message}</p>}
+        </button> 
       </form>
     );
   }

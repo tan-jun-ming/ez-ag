@@ -13,11 +13,9 @@ import GoogleButton from 'react-google-button';
 import './signin.css';
 
 const SignInPage = () => (
-  <div>
-    <div class = 'container'>
+    <div>
       <SignInForm/>
     </div>
-  </div>
 );
  
 const INITIAL_STATE = {
@@ -70,10 +68,7 @@ class SignInFormBase extends Component {
     const isInvalid = password === '' || email === '';
  
     return (
-      <div>
-        <form onSubmit={this.onSubmit}>
-
-          <div class = 'container' id ="signinform">
+        <form className = 'container' onSubmit={this.onSubmit}>
           <h1>Ez-Ag Login</h1>
             <label for = 'email'><b>Email</b></label>
             <br></br>
@@ -104,29 +99,10 @@ class SignInFormBase extends Component {
 
           <PasswordForgetLink/>
           <SignUpLink />
-          </div>
 
-          {/* <button id = 'googlebttn' onClick={() => {
-            this.onGoogleSignIn();
-          }}
-          style={{
-            color: "white",
-            backgroundColor: "red",
-            padding: ".5rem",
-            border: 0,
-            borderRadius: "4px",
-            fontWeight: 800,
-            fontFamily: "unset"
-          }}
-          >
-            Sign in with Google
-          </button> */}
-  
-          {error && <p>{error.message}</p>}
+          {error && <p style = {{color: 'red'}}>{error.message}</p>}
         </form>
 
-
-      </div>
     );
   }
 }
